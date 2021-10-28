@@ -8,4 +8,12 @@
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_gps"
+        android:checkable="false"
+        android:enabled="false"
+        android:orderInCategory="100"
+        android:title="@string/action_gps"
+        app:showAsAction="never" />
 </menu>

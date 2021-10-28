@@ -11,6 +11,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -31,6 +32,8 @@ android {
     compileOptions {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
+
+
     }
 }
 
@@ -51,4 +54,13 @@ dependencies {
     implementation('com.google.apis:google-api-services-drive:v3-rev136-1.25.0') {
 
     }
+
+
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
+    // location play services
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
+    // dexter runtime permissions
+    implementation 'com.karumi:dexter:4.2.0'
+
+    implementation 'androidx.multidex:multidex: 2.0.1'
 }

@@ -18,9 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_toLeftOf="@+id/chatSendButton"
-            android:autoText="true"
-            android:hint="type message"
-            tools:ignore="TouchTargetSizeCheck" />
+            tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
 
         <Button
             android:id="@+id/chatSendButton"
@@ -84,13 +82,17 @@
             android:layout_alignLeft="@id/editTextTextMultiLine"
             android:layout_marginLeft="337dp"
             app:srcCompat="@android:drawable/ic_input_add"
-            tools:ignore="SpeakableTextPresentCheck,DuplicateClickableBoundsCheck,TouchTargetSizeCheck" />
+            tools:ignore="SpeakableTextPresentCheck,DuplicateClickableBoundsCheck,TouchTargetSizeCheck"
+            android:layout_alignStart="@id/editTextTextMultiLine"
+            android:layout_marginStart="337dp" />
 
         <ImageButton
             android:id="@+id/btnPlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignStart="@id/messageEdit"
             android:layout_alignLeft="@id/messageEdit"
+            android:layout_marginStart="271dp"
             android:layout_marginLeft="271dp"
             android:minWidth="48dp"
             android:minHeight="48dp"
@@ -106,7 +108,9 @@
             android:minWidth="48dp"
             android:minHeight="48dp"
             app:srcCompat="?attr/actionModePasteDrawable"
-            tools:ignore="SpeakableTextPresentCheck" />
+            tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck"
+            android:layout_alignStart="@id/messageEdit"
+            android:layout_marginStart="222dp" />
 
 
     </RelativeLayout>

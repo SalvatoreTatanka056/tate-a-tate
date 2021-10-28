@@ -9,6 +9,12 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.location.Address;
+import android.location.Criteria;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,6 +31,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -48,9 +55,16 @@ import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -97,7 +111,6 @@ class Task1 extends AsyncTask {
     }
 }
 
-
 public class ChatActivity extends AppCompatActivity {
 
     private EditText messageET;
@@ -128,6 +141,10 @@ public class ChatActivity extends AppCompatActivity {
     public int mIntCountFile=0;
     public boolean bFlagFileExist;
     public  int i=0;
+    private String providerId = LocationManager.GPS_PROVIDER;
+    private LocationManager locationManager=null;
+    private static final int MIN_DIST=20;
+    private static final int MIN_PERIOD=30000;
 
     private Timer myTimer;
     private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
@@ -164,6 +181,8 @@ public class ChatActivity extends AppCompatActivity {
         mBtnIncolla.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mIdIntelocutore.setSelectAllOnFocus(true);
+                mIdIntelocutore.requestFocus();
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 mIdIntelocutore.setText( clipboard.getText().toString());
 
@@ -195,14 +214,22 @@ public class ChatActivity extends AppCompatActivity {
 
         messageET.setEnabled(false);
 
-        myTimer = new Timer();
-        myTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                    TimerMethod();
-                }
+         messagesContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+             @Override
+             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                 ChatMessage data =(ChatMessage) adapterView.getItemAtPosition(i);
+                 //adapterView.getAdapter().getItem(i);
 
-        }, 2000, 3000);
+                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                 ClipData clip = ClipData.newPlainText("ID",data.getMessage().toString());
+                 clipboard.setPrimaryClip(clip);
+
+                 //String message = entry.getMessage();
+
+                 Toast.makeText(getBaseContext(), data.getMessage(), Toast.LENGTH_SHORT).show();
+             }
+         });
+
     }
 
     private static boolean showCheatSheet(View view, CharSequence text) {
@@ -438,6 +465,14 @@ public class ChatActivity extends AppCompatActivity {
                 messageET.setEnabled(true);
                 mPrgMain.setVisibility(View.INVISIBLE);
 
+                myTimer = new Timer();
+                myTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        TimerMethod();
+                    }
+
+                }, 2000, 3000);
 
             }
     }
@@ -591,6 +626,9 @@ public class ChatActivity extends AppCompatActivity {
         return true;
     }
 
+
+public LocationListener locationListener;
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -605,8 +643,56 @@ public class ChatActivity extends AppCompatActivity {
             return true;
         }
 
+        if (id == R.id.action_gps) {
+
+         /*   locationManager  = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            locationListener = new LocationListener() {
+
+                @Override
+                public void onLocationChanged(Location location) {
+
+                    updateLocation(location);
+
+                    //Toast.makeText(getBaseContext(),mAddress,Toast.LENGTH_LONG);
+
+                    mIdIntelocutore.setText(mAddress);
+
+                }
+                @Override public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                }
+                @Override
+                public void onProviderEnabled(String provider) {
+                }
+                @Override
+                public void onProviderDisabled(String provider) {
+                }
+
+            };
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+
+                Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                updateLocation(lastKnownLocation);
+
+            }else {
+
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            }*/
+
+
+            return true;
+        }
+
+
+
         return super.onOptionsItemSelected(item);
     }
+
+
 
     private void initControls() {
         messagesContainer = (ListView) findViewById(R.id.messagesContainer);
@@ -680,5 +766,61 @@ public class ChatActivity extends AppCompatActivity {
         }
 
     }
+
+  /*  @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            }
+        }
+    }
+
+    public String mAddress;
+*/
+
+  /*  public void updateLocation ( Location location){
+
+        Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+        try {
+            List<Address> listAddresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
+
+            String address = "Could not find location :(";
+
+            if (listAddresses != null && listAddresses.size() > 0) {
+
+                if (listAddresses.get(0).getThoroughfare() != null) {
+
+                    address = listAddresses.get(0).getThoroughfare() + " ";
+                }
+
+                if (listAddresses.get(0).getLocality() != null) {
+
+                    address += listAddresses.get(0).getLocality() + " ";
+                }
+
+                if (listAddresses.get(0).getPostalCode() != null) {
+
+                    address += listAddresses.get(0).getPostalCode() + " ";
+                }
+
+                if (listAddresses.get(0).getAdminArea() != null) {
+
+                    address += listAddresses.get(0).getAdminArea();
+                }
+            }
+
+            mAddress = address;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }*/
 
 }
