@@ -6,8 +6,8 @@
 
     <RelativeLayout
         android:id="@+id/container"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="#090909"
         android:orientation="vertical"
         android:padding="20dp">
@@ -19,6 +19,7 @@
             android:layout_alignParentBottom="true"
             android:layout_toLeftOf="@+id/chatSendButton"
             android:ellipsize="none"
+            android:textColor="#FBF7F7"
             tools:ignore="TouchTargetSizeCheck,SpeakableTextPresentCheck" />
 
         <Button
@@ -58,7 +59,7 @@
 
         <EditText
             android:id="@+id/editTextTextMultiLine"
-            android:layout_width="222dp"
+            android:layout_width="176dp"
             android:layout_height="wrap_content"
             android:ems="10"
             android:gravity="start|top"
@@ -84,30 +85,60 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignStart="@id/messageEdit"
-            android:layout_alignLeft="@id/messageEdit"
+            android:layout_alignLeft="@id/btnIncolla"
             android:layout_marginStart="271dp"
             android:layout_marginLeft="271dp"
-            android:background="#151515"
+            android:background="#000000"
             android:minWidth="48dp"
             android:minHeight="48dp"
             app:srcCompat="?attr/actionModeCopyDrawable"
-            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck"
-            app:tint="#FBF9F9" />
+            app:tint="#FFFFFF"
+            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
+
+        <ImageButton
+            android:id="@+id/btnPlay2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@id/messageEdit"
+            android:layout_alignLeft="@id/messageEdit"
+            android:layout_marginStart="320dp"
+            android:layout_marginLeft="320dp"
+            android:background="#000000"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            app:srcCompat="@android:drawable/ic_lock_power_off"
+            app:tint="#FFFFFF"
+            tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck" />
 
         <ImageButton
             android:id="@+id/btnIncolla"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignStart="@id/messageEdit"
-            android:layout_alignLeft="@id/messageEdit"
+            android:layout_alignLeft="@id/btnCancella"
             android:layout_marginStart="222dp"
             android:layout_marginLeft="222dp"
-            android:background="#0E0E0E"
+            android:background="#000000"
             android:minWidth="48dp"
             android:minHeight="48dp"
             app:srcCompat="?attr/actionModePasteDrawable"
-            tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck"
-            app:tint="#F8F1F1" />
+            app:tint="#FFFFFF"
+            tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck" />
+
+        <ImageButton
+            android:id="@+id/btnCancella"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@id/messageEdit"
+            android:layout_alignLeft="@id/messageEdit"
+            android:layout_marginStart="174dp"
+            android:layout_marginLeft="174dp"
+            android:background="#000000"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            app:srcCompat="@android:drawable/ic_popup_sync"
+            app:tint="#FFFFFF"
+            tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck" />
 
 
     </RelativeLayout>

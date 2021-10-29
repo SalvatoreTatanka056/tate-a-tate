@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-
 public class ChatAdapter extends BaseAdapter {
 
     private final List<ChatMessage> chatMessages;
@@ -40,6 +39,11 @@ public class ChatAdapter extends BaseAdapter {
         } else {
             return null;
         }
+    }
+
+
+    public void clear() {
+        chatMessages.clear();
     }
 
     @Override

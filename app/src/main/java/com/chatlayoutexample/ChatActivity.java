@@ -129,6 +129,7 @@ public class ChatActivity extends AppCompatActivity {
     private ImageButton mBtnCollega;
     private ImageButton mBtnPlay;
     private ImageButton mBtnIncolla;
+    private ImageButton mBtnCancella;
     private ProgressBar mPrgMain;
     public boolean flagFolder = false;
     public List<String> mlistId;
@@ -157,6 +158,7 @@ public class ChatActivity extends AppCompatActivity {
         mIdIntelocutore = (EditText) findViewById(R.id.editTextTextMultiLine);
         mPrgMain =(ProgressBar)  findViewById(R.id.prgMain);
         mBtnCollega = (ImageButton) findViewById(R.id.BtnCollega);
+        mBtnCancella = (ImageButton) findViewById(R.id.btnCancella);
         mBtnCollega.setOnClickListener(view -> query());
         mBtnCollega.setVisibility(View.INVISIBLE);
 
@@ -175,6 +177,9 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+
 
 
         mBtnIncolla = (ImageButton) findViewById(R.id.btnIncolla);
@@ -231,6 +236,17 @@ public class ChatActivity extends AppCompatActivity {
              }
          });
 
+
+        mBtnCancella.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                ChatAdapter MessageAdapter = (ChatAdapter) messagesContainer.getAdapter();
+                MessageAdapter.clear();
+                adapter.notifyDataSetChanged();
+
+            }
+        });
     }
 
     private static boolean showCheatSheet(View view, CharSequence text) {
