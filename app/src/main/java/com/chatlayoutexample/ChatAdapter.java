@@ -13,9 +13,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-/**
- * Created by Technovibe on 17-04-2015.
- */
+
 public class ChatAdapter extends BaseAdapter {
 
     private final List<ChatMessage> chatMessages;
@@ -63,7 +61,7 @@ public class ChatAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        boolean myMsg = chatMessage.getIsme() ;//Just a dummy check to simulate whether it me or other sender
+        boolean myMsg = chatMessage.getIsme() ;
         setAlignment(holder, myMsg);
         holder.txtMessage.setText(chatMessage.getMessage());
         holder.txtInfo.setText(chatMessage.getDate());
@@ -128,8 +126,7 @@ public class ChatAdapter extends BaseAdapter {
         holder.txtInfo = (TextView) v.findViewById(R.id.txtInfo);
         return holder;
     }
-
-
+    
     private static class ViewHolder {
         public TextView txtMessage;
         public TextView txtInfo;

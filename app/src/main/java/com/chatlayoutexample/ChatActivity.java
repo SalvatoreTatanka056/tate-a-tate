@@ -181,10 +181,13 @@ public class ChatActivity extends AppCompatActivity {
         mBtnIncolla.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mIdIntelocutore.setSelectAllOnFocus(true);
-                mIdIntelocutore.requestFocus();
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                mIdIntelocutore.setText( clipboard.getText().toString());
+
+                if(mIdIntelocutore.getText().length() >0) {
+                    mIdIntelocutore.setSelectAllOnFocus(true);
+                    mIdIntelocutore.requestFocus();
+                    ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    mIdIntelocutore.setText(clipboard.getText().toString());
+                }
 
             }
         });
@@ -224,8 +227,6 @@ public class ChatActivity extends AppCompatActivity {
                  ClipData clip = ClipData.newPlainText("ID",data.getMessage().toString());
                  clipboard.setPrimaryClip(clip);
 
-                 //String message = entry.getMessage();
-
                  Toast.makeText(getBaseContext(), data.getMessage(), Toast.LENGTH_SHORT).show();
              }
          });
@@ -237,8 +238,8 @@ public class ChatActivity extends AppCompatActivity {
             return false;
         }
 
-        final int[] screenPos = new int[2]; // origin is device display
-        final Rect displayFrame = new Rect(); // includes decorations (e.g. status bar)
+        final int[] screenPos = new int[2];
+        final Rect displayFrame = new Rect();
         view.getLocationOnScreen(screenPos);
         view.getWindowVisibleDisplayFrame(displayFrame);
 
@@ -272,12 +273,10 @@ public class ChatActivity extends AppCompatActivity {
         return true;
     }
 
-
     private void TimerMethod()
     {
         this.runOnUiThread(Timer_Tick);
     }
-
 
     private Runnable Timer_Tick = new Runnable() {
         public void run() {
@@ -331,10 +330,7 @@ public class ChatActivity extends AppCompatActivity {
             return device_unique_id;
         }
 
-    /**
-     * Handles the {@code result} of a completed sign-in activity initiated from {@link
-     * #requestSignIn()}.
-     */
+
     private void handleSignInResult(Intent result) {
         GoogleSignIn.getSignedInAccountFromIntent(result)
                 .addOnSuccessListener(googleAccount -> {
@@ -353,8 +349,6 @@ public class ChatActivity extends AppCompatActivity {
                                     .setApplicationName("Drive API Migration")
                                     .build();
 
-                    // The DriveServiceHelper encapsulates all REST API and SAF functionality.
-                    // Its instantiation is required before handling any onClick actions.
                     mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
 
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ITALY);
@@ -387,10 +381,6 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Opens a file from its {@code uri} returned from the Storage Access Framework file picker
-     * initiated by {@link #openFilePicker()}.
-     */
     private void openFileFromFilePicker(Uri uri) {
         if (mDriveServiceHelper != null) {
             Log.d(TAG, "Opening " + uri.getPath());
@@ -407,9 +397,6 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Creates a new file via the Drive REST API.
-     */
     private void createFile(String NomeFile,String Message) {
         if (mDriveServiceHelper != null) {
             Log.d(TAG, "Creating a file.");
@@ -419,6 +406,7 @@ public class ChatActivity extends AppCompatActivity {
                     .addOnSuccessListener(fileId -> readFile(fileId))
                     .addOnFailureListener(exception ->
                             Toast.makeText(this, String.valueOf(exception.toString()),Toast.LENGTH_LONG).show());
+
         }
     }
 
@@ -446,9 +434,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Retrieves the title and content of a file identified by {@code fileId} and populates the UI.
-     */
+
     private void readFile(String fileId) {
 
             if(flagFolder) {
@@ -551,9 +537,6 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Queries the Drive REST API for files visible to this app and lists them in the content view.
-     */
     private void query() {
         if (mDriveServiceHelper != null) {
             Log.d(TAG, "Querying for files.");
@@ -580,18 +563,12 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * Updates the UI to read-only mode.
-     */
     private void setReadOnlyMode() {
         mFileTitleEditText.setEnabled(false);
         mDocContentEditText.setEnabled(false);
         mOpenFileId = null;
     }
 
-    /**
-     * Updates the UI to read/write mode on the document identified by {@code fileId}.
-     */
     private void setReadWriteMode(String fileId) {
         mFileTitleEditText.setEnabled(true);
         mDocContentEditText.setEnabled(true);
