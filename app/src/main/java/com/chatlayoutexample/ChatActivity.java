@@ -1,33 +1,21 @@
 	package com.chatlayoutexample;
 
-	import android.Manifest;
 	import android.app.Activity;
 	import android.content.ClipData;
 	import android.content.ClipboardManager;
 	import android.content.Context;
 	import android.content.Intent;
-	import android.content.IntentSender;
-	import android.content.pm.PackageInfo;
-	import android.content.pm.PackageManager;
 	import android.graphics.Rect;
-	import android.location.Address;
-	import android.location.Criteria;
-	import android.location.Geocoder;
 	import android.location.Location;
 	import android.location.LocationListener;
 	import android.location.LocationManager;
 	import android.net.Uri;
-	import android.os.AsyncTask;
 	import android.os.Bundle;
 	import android.os.Environment;
 
-	import android.os.Handler;
 	import android.provider.Settings;
-	import android.telephony.TelephonyManager;
-	import android.text.Editable;
 	import android.text.TextUtils;
 	import android.util.Log;
-	import android.util.Pair;
 	import android.view.Gravity;
 	import android.view.Menu;
 	import android.view.MenuItem;
@@ -39,69 +27,33 @@
 	import android.widget.ListView;
 	import android.widget.ProgressBar;
 	import android.widget.RelativeLayout;
-	import android.widget.TextView;
 	import android.widget.Toast;
 
 	import com.google.android.gms.auth.api.signin.GoogleSignIn;
 	import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 	import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-	import com.google.android.gms.common.ConnectionResult;
 	import com.google.android.gms.common.api.GoogleApiClient;
 	import com.google.android.gms.common.api.Scope;
-	import com.google.android.gms.common.api.internal.ConnectionCallbacks;
-	import com.google.android.gms.common.api.internal.OnConnectionFailedListener;
-	import com.google.android.gms.location.LocationRequest;
-	import com.google.android.gms.location.LocationServices;
-	import com.google.android.gms.maps.CameraUpdateFactory;
-	import com.google.android.gms.maps.GoogleMap;
-	import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-	import com.google.android.gms.maps.model.LatLng;
-	import com.google.android.gms.maps.model.Marker;
-	import com.google.android.gms.maps.model.MarkerOptions;
-	import com.google.android.gms.tasks.Task;
 	import com.google.api.client.extensions.android.http.AndroidHttp;
 	import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-	import com.google.api.client.googleapis.util.Utils;
 	import com.google.api.client.json.gson.GsonFactory;
-	import com.google.api.client.util.DateTime;
 	import com.google.api.services.drive.Drive;
 	import com.google.api.services.drive.DriveScopes;
 	import com.google.api.services.drive.model.File;
-	import com.google.api.services.drive.model.FileList;
-	import com.google.common.collect.MapMaker;
 
 	import androidx.annotation.NonNull;
 	import androidx.appcompat.app.AppCompatActivity;
-	import androidx.core.app.ActivityCompat;
-	import androidx.core.content.ContextCompat;
-	import androidx.fragment.app.FragmentManager;
-	import androidx.fragment.app.FragmentTransaction;
 
 
-	import org.json.JSONArray;
-	import org.json.JSONObject;
-
-	import java.io.BufferedReader;
-	import java.io.ByteArrayOutputStream;
-	import java.io.IOException;
-	import java.io.InputStream;
-	import java.io.InputStreamReader;
-	import java.io.OutputStream;
-	import java.net.InetAddress;
-	import java.net.UnknownHostException;
 	import java.text.DateFormat;
 	import java.text.SimpleDateFormat;
 	import java.util.ArrayList;
 	import java.util.Collections;
 	import java.util.Date;
-	import java.util.HashMap;
-	import java.util.HashSet;
 	import java.util.List;
 	import java.util.Locale;
-	import java.util.Set;
 	import java.util.Timer;
 	import java.util.TimerTask;
-	import java.util.function.Consumer;
 
 
 	public class ChatActivity extends AppCompatActivity implements LocationListener  {
@@ -155,7 +107,7 @@
 
 			mIdIntelocutore = (EditText) findViewById(R.id.editTextTextMultiLine);
 			mPrgMain = (ProgressBar) findViewById(R.id.prgMain);
-			mBtnCollega = (ImageButton) findViewById(R.id.BtnCollega);
+			mBtnCollega = (ImageButton) findViewById(R.id.BtnExit);
 			mBtnCancella = (ImageButton) findViewById(R.id.btnCancella);
 			mBtnCollega.setOnClickListener(view -> query());
 			mBtnCollega.setVisibility(View.INVISIBLE);
@@ -596,6 +548,10 @@
 		public LocationListener ll;
 		public LocationManager lm;
 
+		public static final String CALCULATOR_PACKAGE ="com.android.calculator2";
+		public static final String CALCULATOR_CLASS ="com.android.calculator2.Calculator";
+
+
 		@Override
 		public boolean onOptionsItemSelected(MenuItem item) {
 			int id = item.getItemId();
@@ -614,8 +570,33 @@
 
 				messageET.setText("http://maps.google.com/maps?q=40.9148405,14.5496018&ll="+Double.toString(destLat) +","+Double.toString(destLong)+"&z=17");
 
+
 				return true;
 			}
+
+			if (id == R.id.action_calc) {
+
+				/*Intent intent = new Intent();
+				intent.addCategory(Intent.CATEGORY_LAUNCHER);
+				intent.setAction(Intent.ACTION_MAIN);
+				intent.addCategory(Intent.CATEGORY_LAUNCHER);
+				intent.setComponent(new ComponentName(
+						CALCULATOR_PACKAGE,
+						CALCULATOR_CLASS));
+				try {
+					startActivity(intent);
+				} catch (ActivityNotFoundException noSuchActivity) {
+					Toast.makeText(getBaseContext(),noSuchActivity.toString(),Toast.LENGTH_LONG).show();
+					// handle exception where calculator intent filter is not registered
+				}*/
+
+				Intent nuovaPagina = new Intent(this, HelpActivity.class);
+				startActivity(nuovaPagina);
+
+				return true;
+			}
+
+
 
 			return super.onOptionsItemSelected(item);
 		}

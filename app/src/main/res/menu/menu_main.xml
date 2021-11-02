@@ -16,4 +16,12 @@
         android:orderInCategory="100"
         android:title="@string/action_gps"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_calc"
+        android:checkable="false"
+        android:enabled="false"
+        android:orderInCategory="100"
+        android:title="@string/action_calc"
+        app:showAsAction="never" />
 </menu>
