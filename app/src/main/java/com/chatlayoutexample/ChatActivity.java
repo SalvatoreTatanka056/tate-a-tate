@@ -162,7 +162,6 @@
 				}
 			});
 
-
 			mBtnPlay = (ImageButton) findViewById(R.id.btnPlay);
 			mBtnPlay.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -213,13 +212,11 @@
 				}
 			});
 
-
 			locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 			//locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 			locationManager.requestLocationUpdates(
 					LocationManager.NETWORK_PROVIDER, 5000, 10, this);
 			//locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
-
 		}
 
 		private static boolean showCheatSheet(View view, CharSequence text) {
@@ -629,16 +626,17 @@
 
 			if (id == R.id.action_shared) {
 
+				ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+
 				Intent sendIntent = new Intent();
 				sendIntent.setAction(Intent.ACTION_SEND);
-				sendIntent.putExtra(Intent.EXTRA_TEXT, mIdIntelocutore.getText().toString());
+				sendIntent.putExtra(Intent.EXTRA_TEXT,clipboard.getText().toString());
 				sendIntent.setType("text/plain");
 
 				Intent shareIntent = Intent.createChooser(sendIntent, null);
 				startActivity(shareIntent);
 
 			}
-
 
 			return super.onOptionsItemSelected(item);
 		}
