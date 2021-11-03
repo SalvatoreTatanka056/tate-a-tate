@@ -45,6 +45,14 @@
 	import androidx.appcompat.app.AppCompatActivity;
 
 
+	import org.apache.commons.codec.binary.Base64;
+
+	import java.io.UnsupportedEncodingException;
+	import java.security.InvalidAlgorithmParameterException;
+	import java.security.InvalidKeyException;
+	import java.security.NoSuchAlgorithmException;
+	import java.security.spec.InvalidKeySpecException;
+	import java.security.spec.InvalidParameterSpecException;
 	import java.text.DateFormat;
 	import java.text.SimpleDateFormat;
 	import java.util.ArrayList;
@@ -55,8 +63,22 @@
 	import java.util.Timer;
 	import java.util.TimerTask;
 
+	import javax.crypto.BadPaddingException;
+	import javax.crypto.Cipher;
+	import javax.crypto.IllegalBlockSizeException;
+	import javax.crypto.NoSuchPaddingException;
+	import javax.crypto.SecretKey;
+	import javax.crypto.spec.SecretKeySpec;
 
-	public class ChatActivity extends AppCompatActivity implements LocationListener  {
+	import se.simbio.encryption.Encryption;
+
+
+	public class ChatActivity extends AppCompatActivity implements LocationListener {
+
+		private static SecretKeySpec secret;
+		//private static String password = "Majabella@56";
+		static  byte[]  key = "!@#$!@#$%^&**&^%".getBytes();
+		final static String algorithm="AES";
 
 		private GoogleApiClient mGoogleApiClient;
 		private Location mLastLocation;
@@ -95,7 +117,7 @@
 		private static final int MIN_PERIOD = 30000;
 		private String mIndirizzo;
 		double destLat, destLong;
-
+		private Encryption encryption = Encryption.getDefault("Key", "Salt", new byte[16]);
 
 		private Timer myTimer;
 		private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
@@ -196,6 +218,8 @@
 			locationManager.requestLocationUpdates(
 					LocationManager.NETWORK_PROVIDER, 5000, 10, this);
 			//locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
+
+
 
 		}
 
@@ -356,7 +380,14 @@
 				Log.d(TAG, "Creating a file.");
 				flagFolder = false;
 
-				mDriveServiceHelper.createFile(NomeFile, Message)
+				//String encryptedValue = Base64.encodeBase64String(encValue);
+
+				//byte[] encValue = Base64.decodeBase64(encryptedValue);
+
+
+				String encrypted = encryption.encryptOrNull(Message);
+
+				mDriveServiceHelper.createFile(NomeFile, encrypted)
 						.addOnSuccessListener(fileId -> readFile(fileId))
 						.addOnFailureListener(exception ->
 								Toast.makeText(this, String.valueOf(exception.toString()), Toast.LENGTH_LONG).show());
@@ -425,7 +456,8 @@
 
 				mDriveServiceHelper.readFile(fileId)
 						.addOnSuccessListener(nameAndContent -> {
-							String ContentFile = nameAndContent.second;
+							String ContentFile =encryption.decryptOrNull(nameAndContent.second);
+
 
 							ChatMessage chatMessage = new ChatMessage();
 							chatMessage.setId(122);//dummy
@@ -548,8 +580,8 @@
 		public LocationListener ll;
 		public LocationManager lm;
 
-		public static final String CALCULATOR_PACKAGE ="com.android.calculator2";
-		public static final String CALCULATOR_CLASS ="com.android.calculator2.Calculator";
+		public static final String CALCULATOR_PACKAGE = "com.android.calculator2";
+		public static final String CALCULATOR_CLASS = "com.android.calculator2.Calculator";
 
 
 		@Override
@@ -568,7 +600,7 @@
 
 			if (id == R.id.action_gps) {
 
-				messageET.setText("http://maps.google.com/maps?q=40.9148405,14.5496018&ll="+Double.toString(destLat) +","+Double.toString(destLong)+"&z=17");
+				messageET.setText("http://maps.google.com/maps?q=40.9148405,14.5496018&ll=" + Double.toString(destLat) + "," + Double.toString(destLong) + "&z=17");
 
 
 				return true;
@@ -597,12 +629,11 @@
 			}
 
 
-
 			return super.onOptionsItemSelected(item);
 		}
 
 		private void onGPSLocationChanged(Location location) {
-			if(location != null){
+			if (location != null) {
 				double pLong = location.getLongitude();
 				double pLat = location.getLatitude();
 
@@ -689,5 +720,75 @@
 			destLong = location.getLongitude();
 
 		}
-	}
 
+
+	/*	private  String encrypt(String data)
+		{
+
+			byte[] dataToSend = data.getBytes();
+			Cipher c = null;
+			try {
+				c = Cipher.getInstance(algorithm);
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			SecretKeySpec k = new SecretKeySpec(key, algorithm);
+			try {
+				c.init(Cipher.ENCRYPT_MODE, k);
+			} catch (InvalidKeyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			byte[] encryptedData = "".getBytes();
+			try {
+				encryptedData = c.doFinal(dataToSend);
+			} catch (IllegalBlockSizeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			byte[] encryptedByteValue = new Base64().encode(encryptedData);
+
+			return new String(encryptedByteValue);//.toString();
+		}
+
+		public String decrypt (String data) {
+
+			byte[] encryptedData = new Base64().decode(data);
+			Cipher c = null;
+			try {
+				c = Cipher.getInstance(algorithm);
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			SecretKeySpec k =
+					new SecretKeySpec(key, algorithm);
+			try {
+				c.init(Cipher.DECRYPT_MODE, k);
+			} catch (InvalidKeyException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			byte[] decrypted = null;
+			try {
+				decrypted = c.doFinal(encryptedData);
+			} catch (IllegalBlockSizeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return new String(decrypted);
+		}*/
+}
