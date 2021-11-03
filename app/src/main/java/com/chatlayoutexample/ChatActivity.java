@@ -126,6 +126,7 @@
 		double destLat, destLong;
 		private Encryption encryption = Encryption.getDefault("Key", "Salt", new byte[16]);
 		NotificationManager notificationManager ;
+		private boolean mflagAttiva = true;
 
 		private Timer myTimer;
 		private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
@@ -225,15 +226,6 @@
 
 			notificationManager = getSystemService(NotificationManager.class);
 
-			/*handler=new Handler();
-			handler.postDelayed(new Runnable() {
-
-				@Override
-				public void run() {
-			  startService(new Intent(getBaseContext(), tateatateService.class));
-
-				}
-			},3000);*/
 		}
 
 		Handler handler;
@@ -455,6 +447,19 @@
 			}
 		}
 
+		@Override
+		protected void onPause() {
+			super.onPause();
+			mflagAttiva = false;
+		}
+
+		@Override
+		protected void onResume() {
+			super.onResume();
+			mflagAttiva = true;
+		}
+
+
 		private void readFileNULL(String fileId) {
 			mDriveServiceHelper.bflagStartTimer = true;
 		}
@@ -468,21 +473,23 @@
 						.addOnSuccessListener(nameAndContent -> {
 							String ContentFile =encryption.decryptOrNull(nameAndContent.second);
 
-							String CHANNEL_ID="my_channel_id";
-							String channel_name="channel_name";
-							String channel_description="channel_description";
-							if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-								NotificationChannel channel = new NotificationChannel(CHANNEL_ID, channel_name, NotificationManager.IMPORTANCE_DEFAULT);
-								channel.setDescription(channel_description);
-								notificationManager.createNotificationChannel(channel);
-							}
-							NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-									.setSmallIcon(android.R.drawable.star_on)
-									.setContentTitle("tate-a-tate: Nuova notifica!!")
-									.setContentText(ContentFile)
-									.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-							notificationManager.notify(0, builder.build());
+							if(mflagAttiva == false) {
 
+								String CHANNEL_ID = "my_channel_id";
+								String channel_name = "channel_name";
+								String channel_description = "channel_description";
+								if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+									NotificationChannel channel = new NotificationChannel(CHANNEL_ID, channel_name, NotificationManager.IMPORTANCE_DEFAULT);
+									channel.setDescription(channel_description);
+									notificationManager.createNotificationChannel(channel);
+								}
+								NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+										.setSmallIcon(android.R.drawable.star_on)
+										.setContentTitle("tate-a-tate: Nuova notifica!!")
+										.setContentText(ContentFile)
+										.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+								notificationManager.notify(0, builder.build());
+							}
 
 							ChatMessage chatMessage = new ChatMessage();
 							chatMessage.setId(122);//dummy
@@ -577,10 +584,6 @@
 			mOpenFileId = fileId;
 		}
 
-		@Override
-		public void onPause() {
-			super.onPause();
-		}
 
 		@Override
 		public void onDestroy() {
