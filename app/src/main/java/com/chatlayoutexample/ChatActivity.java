@@ -376,11 +376,6 @@
 				Log.d(TAG, "Creating a file.");
 				flagFolder = false;
 
-				//String encryptedValue = Base64.encodeBase64String(encValue);
-
-				//byte[] encValue = Base64.decodeBase64(encryptedValue);
-
-
 				String encrypted = encryption.encryptOrNull(Message);
 
 				mDriveServiceHelper.createFile(NomeFile, encrypted)
@@ -604,20 +599,6 @@
 
 			if (id == R.id.action_calc) {
 
-				/*Intent intent = new Intent();
-				intent.addCategory(Intent.CATEGORY_LAUNCHER);
-				intent.setAction(Intent.ACTION_MAIN);
-				intent.addCategory(Intent.CATEGORY_LAUNCHER);
-				intent.setComponent(new ComponentName(
-						CALCULATOR_PACKAGE,
-						CALCULATOR_CLASS));
-				try {
-					startActivity(intent);
-				} catch (ActivityNotFoundException noSuchActivity) {
-					Toast.makeText(getBaseContext(),noSuchActivity.toString(),Toast.LENGTH_LONG).show();
-					// handle exception where calculator intent filter is not registered
-				}*/
-
 				Intent nuovaPagina = new Intent(this, HelpActivity.class);
 				startActivity(nuovaPagina);
 
@@ -729,75 +710,4 @@
 			destLong = location.getLongitude();
 
 		}
-
-
-	/*	private  String encrypt(String data)
-		{
-
-			byte[] dataToSend = data.getBytes();
-			Cipher c = null;
-			try {
-				c = Cipher.getInstance(algorithm);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			SecretKeySpec k = new SecretKeySpec(key, algorithm);
-			try {
-				c.init(Cipher.ENCRYPT_MODE, k);
-			} catch (InvalidKeyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			byte[] encryptedData = "".getBytes();
-			try {
-				encryptedData = c.doFinal(dataToSend);
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			byte[] encryptedByteValue = new Base64().encode(encryptedData);
-
-			return new String(encryptedByteValue);//.toString();
-		}
-
-		public String decrypt (String data) {
-
-			byte[] encryptedData = new Base64().decode(data);
-			Cipher c = null;
-			try {
-				c = Cipher.getInstance(algorithm);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			SecretKeySpec k =
-					new SecretKeySpec(key, algorithm);
-			try {
-				c.init(Cipher.DECRYPT_MODE, k);
-			} catch (InvalidKeyException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			byte[] decrypted = null;
-			try {
-				decrypted = c.doFinal(encryptedData);
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return new String(decrypted);
-		}*/
 }
