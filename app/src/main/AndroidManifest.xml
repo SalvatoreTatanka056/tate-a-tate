@@ -44,6 +44,12 @@
         <activity android:name=".HelpActivity">
         </activity>
 
+        <service
+            android:name=".tateatateService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+
 
     </application>
 

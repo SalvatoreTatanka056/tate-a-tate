@@ -1,10 +1,14 @@
 	package com.chatlayoutexample;
 
 	import android.app.Activity;
+	import android.app.NotificationChannel;
+	import android.app.NotificationManager;
 	import android.content.ClipData;
 	import android.content.ClipboardManager;
+	import android.content.ComponentName;
 	import android.content.Context;
 	import android.content.Intent;
+	import android.content.ServiceConnection;
 	import android.graphics.Rect;
 	import android.location.Location;
 	import android.location.LocationListener;
@@ -13,6 +17,8 @@
 	import android.os.Bundle;
 	import android.os.Environment;
 
+	import android.os.Handler;
+	import android.os.IBinder;
 	import android.provider.Settings;
 	import android.text.TextUtils;
 	import android.util.Log;
@@ -43,6 +49,7 @@
 
 	import androidx.annotation.NonNull;
 	import androidx.appcompat.app.AppCompatActivity;
+	import androidx.core.app.NotificationCompat;
 
 
 	import org.apache.commons.codec.binary.Base64;
@@ -118,6 +125,7 @@
 		private String mIndirizzo;
 		double destLat, destLong;
 		private Encryption encryption = Encryption.getDefault("Key", "Salt", new byte[16]);
+		NotificationManager notificationManager ;
 
 		private Timer myTimer;
 		private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
@@ -213,11 +221,22 @@
 			});
 
 			locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-			//locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-			locationManager.requestLocationUpdates(
-					LocationManager.NETWORK_PROVIDER, 5000, 10, this);
-			//locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
+
+			notificationManager = getSystemService(NotificationManager.class);
+
+			/*handler=new Handler();
+			handler.postDelayed(new Runnable() {
+
+				@Override
+				public void run() {
+			  startService(new Intent(getBaseContext(), tateatateService.class));
+
+				}
+			},3000);*/
 		}
+
+		Handler handler;
 
 		private static boolean showCheatSheet(View view, CharSequence text) {
 			if (TextUtils.isEmpty(text)) {
@@ -449,6 +468,21 @@
 						.addOnSuccessListener(nameAndContent -> {
 							String ContentFile =encryption.decryptOrNull(nameAndContent.second);
 
+							String CHANNEL_ID="my_channel_id";
+							String channel_name="channel_name";
+							String channel_description="channel_description";
+							if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+								NotificationChannel channel = new NotificationChannel(CHANNEL_ID, channel_name, NotificationManager.IMPORTANCE_DEFAULT);
+								channel.setDescription(channel_description);
+								notificationManager.createNotificationChannel(channel);
+							}
+							NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+									.setSmallIcon(android.R.drawable.star_on)
+									.setContentTitle("tate-a-tate: Nuova notifica!!")
+									.setContentText(ContentFile)
+									.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+							notificationManager.notify(0, builder.build());
+
 
 							ChatMessage chatMessage = new ChatMessage();
 							chatMessage.setId(122);//dummy
@@ -460,7 +494,6 @@
 								displayMessage(chatMessage);
 								DeleteFile(fileId);
 							}
-
 						})
 						.addOnFailureListener(exception ->
 								Log.e(TAG, "Couldn't read file.", exception));
@@ -593,7 +626,6 @@
 
 				messageET.setText("http://maps.google.com/maps?q=40.9148405,14.5496018&ll=" + Double.toString(destLat) + "," + Double.toString(destLong) + "&z=17");
 
-
 				return true;
 			}
 
@@ -710,4 +742,16 @@
 			destLong = location.getLongitude();
 
 		}
-}
+
+		// Method to start the service
+		public void startService(View view) {
+			startService(new Intent(getBaseContext(), tateatateService.class));
+		}
+
+		// Method to stop the service
+		public void stopService(View view) {
+			stopService(new Intent(getBaseContext(), tateatateService.class));
+		}
+
+
+	}

@@ -138,7 +138,7 @@
             android:minHeight="48dp"
             app:srcCompat="@android:drawable/ic_popup_sync"
             app:tint="#FFFFFF"
-            tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck" />
+            tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck"/>
 
 
     </RelativeLayout>

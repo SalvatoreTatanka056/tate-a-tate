@@ -1,6 +1,7 @@
 package com.chatlayoutexample;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,9 +26,15 @@ public class SplashActivity extends Activity {
             public void run() {
                 Intent intent=new Intent(getApplicationContext(),ChatActivity.class);
                 startActivity(intent);
+
+
+
                 finish();
             }
         },3000);
 
     }
+
+
+
 }
