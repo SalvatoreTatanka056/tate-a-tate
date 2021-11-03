@@ -11,10 +11,17 @@
         android:id="@+id/action_gps"
         android:orderInCategory="100"
         android:title="@string/action_gps" />
+
+    <item
+        android:id="@+id/action_shared"
+        android:orderInCategory="100"
+        android:title="@string/action_shared" />
+
     <item
         android:id="@+id/action_calc"
         android:orderInCategory="100"
         android:title="@string/action_calc" />
+
 
 
 </menu>

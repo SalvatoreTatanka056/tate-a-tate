@@ -173,6 +173,7 @@
 					Toast.makeText(getBaseContext(), "Copia Id effettuata.", Toast.LENGTH_SHORT).show();
 					mIdIntelocutore.setSelectAllOnFocus(true);
 					mIdIntelocutore.requestFocus();
+
 				}
 			});
 
@@ -218,8 +219,6 @@
 			locationManager.requestLocationUpdates(
 					LocationManager.NETWORK_PROVIDER, 5000, 10, this);
 			//locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
-
-
 
 		}
 
@@ -626,6 +625,18 @@
 				startActivity(nuovaPagina);
 
 				return true;
+			}
+
+			if (id == R.id.action_shared) {
+
+				Intent sendIntent = new Intent();
+				sendIntent.setAction(Intent.ACTION_SEND);
+				sendIntent.putExtra(Intent.EXTRA_TEXT, mIdIntelocutore.getText().toString());
+				sendIntent.setType("text/plain");
+
+				Intent shareIntent = Intent.createChooser(sendIntent, null);
+				startActivity(shareIntent);
+
 			}
 
 

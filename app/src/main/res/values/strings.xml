@@ -7,4 +7,5 @@
     <string name="splash_screen">tate-a-tate</string>
     <string name="action_calc" >Help</string>
     <string name="help_screen">tate-a-tate</string>
+    <string name="action_shared">Condividi</string>
 </resources>
