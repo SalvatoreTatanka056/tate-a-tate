@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -107,13 +108,21 @@ Codice di gestione della voce MENU_1
 */
                 break;
             case R.id.MENU_2:
-                mLines =readLine("cronologie.txt");
+
+                String strOld ="KEY";
+                list.clear();
+                list.add(new Contatto("+", "Nuova Chat", "═══════════════════════════"));
+                String path =  Environment.getExternalStorageDirectory() + java.io.File.separator + "CONVERSAZIONI"+  java.io.File.separator  +"conversazioni.txt";
+                mLines =readLine(path);
                 for (String string : mLines)
                 {
                     String[] arrId = string.split(" ");
-                    list.add(new Contatto(arrId[0],"", arrId[1]));
+                    if(strOld.compareTo(arrId[0] )!=0) {
+                        list.add(new Contatto(arrId[0], "", arrId[0]));
+                        strOld =  arrId[0];
+                    }
                 }
-
+                adapter = new CustomAdapter(this, R.layout.list_item_utenti, list);
                 listView.setAdapter(adapter);
                 break;
         }

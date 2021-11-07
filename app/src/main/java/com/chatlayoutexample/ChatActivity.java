@@ -30,6 +30,7 @@
 	import android.widget.Button;
 	import android.widget.EditText;
 	import android.widget.ImageButton;
+	import android.widget.ListAdapter;
 	import android.widget.ListView;
 	import android.widget.ProgressBar;
 	import android.widget.RelativeLayout;
@@ -54,6 +55,9 @@
 
 	import org.apache.commons.codec.binary.Base64;
 
+	import java.io.FileOutputStream;
+	import java.io.IOException;
+	import java.io.OutputStreamWriter;
 	import java.io.UnsupportedEncodingException;
 	import java.security.InvalidAlgorithmParameterException;
 	import java.security.InvalidKeyException;
@@ -653,10 +657,65 @@
 				Intent shareIntent = Intent.createChooser(sendIntent, null);
 				startActivity(shareIntent);
 
+				return true;
+
+			}
+
+			if (id == R.id.action_contatto) {
+
+				String pp="";
+				ListAdapter adapter_tmp = messagesContainer.getAdapter();
+				for (int i = 0; i<adapter_tmp.getCount();i++ ) {
+					ChatMessage cMsg = (ChatMessage) adapter_tmp.getItem(i);
+
+					String[] IdFolders = mId.split(" ");
+					pp += String.format("%s %s\n",IdFolders[1],cMsg.getMessage().toString());
+
+				}
+
+				writeToFile(pp);
+
+
+				return true;
 			}
 
 			return super.onOptionsItemSelected(item);
 		}
+
+		public void writeToFile(String data)
+		{
+
+			// Get the directory for the user's public pictures directory.
+			java.io.File fileConnectChat = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
+
+			// Make sure the path directory exists.
+			if(!fileConnectChat.exists())
+			{
+				// Make it, if it doesn't exit
+				fileConnectChat.mkdirs();
+
+			}
+
+			final java.io.File file = new java.io.File(fileConnectChat, "conversazioni.txt");
+
+			try
+			{
+				file.createNewFile();
+				FileOutputStream fOut = new FileOutputStream(file);
+				OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+				myOutWriter.append(data);
+
+				myOutWriter.close();
+
+				fOut.flush();
+				fOut.close();
+			}
+			catch (IOException e)
+			{
+				Log.e("Exception", "File write failed: " + e.toString());
+			}
+		}
+
 
 		private void onGPSLocationChanged(Location location) {
 			if (location != null) {
