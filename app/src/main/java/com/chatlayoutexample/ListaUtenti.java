@@ -9,6 +9,7 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,12 +21,17 @@ import android.os.Bundle;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -112,8 +118,8 @@ Codice di gestione della voce MENU_1
                 String strOld ="KEY";
                 list.clear();
                 list.add(new Contatto("+", "Nuova Chat", "═══════════════════════════"));
-                String path =  Environment.getExternalStorageDirectory() + java.io.File.separator + "CONVERSAZIONI"+  java.io.File.separator  +"conversazioni.txt";
-                mLines =readLine(path);
+
+                mLines =  readFromFile(getBaseContext());
                 for (String string : mLines)
                 {
                     String[] arrId = string.split(" ");
@@ -129,25 +135,55 @@ Codice di gestione della voce MENU_1
         return true;
     }
 
-    public List<String> readLine(String path) {
-        List<String> mLines = new ArrayList<>();
 
-        AssetManager am = mContext.getAssets();
+    private ArrayList<String> readFromFile(Context context) {
 
-        try {
-            InputStream is = am.open(path);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String line;
+        ArrayList<String> ret = new ArrayList<>();
 
-            while ((line = reader.readLine()) != null) {
-                mLines.add(line);
+
+            //java.io.File sdcard = Environment.getExternalStorageDirectory() ;
+            java.io.File sdcard  = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
+
+            java.io.File  file = new java.io.File(sdcard, "conversazioni.txt");
+
+            StringBuilder text = new StringBuilder();
+
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String line;
+
+                while ((line = br.readLine()) != null) {
+                    ret.add(line);
+
+                }
+                br.close();
+            } catch (IOException e) {
+                //You'll need to add proper error handling here
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return mLines;
+        return ret;
     }
+
+
+    public String read_file(Context context, String filename) {
+        try {
+            FileInputStream fis = context.openFileInput(filename);
+            InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
+            BufferedReader bufferedReader = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            return sb.toString();
+        } catch (FileNotFoundException e) {
+            return "";
+        } catch (UnsupportedEncodingException e) {
+            return "";
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
 }
 

@@ -663,17 +663,7 @@
 
 			if (id == R.id.action_contatto) {
 
-				String pp="";
-				ListAdapter adapter_tmp = messagesContainer.getAdapter();
-				for (int i = 0; i<adapter_tmp.getCount();i++ ) {
-					ChatMessage cMsg = (ChatMessage) adapter_tmp.getItem(i);
-
-					String[] IdFolders = mId.split(" ");
-					pp += String.format("%s %s\n",IdFolders[1],cMsg.getMessage().toString());
-
-				}
-
-				writeToFile(pp);
+				writeToFile();
 
 
 				return true;
@@ -682,7 +672,7 @@
 			return super.onOptionsItemSelected(item);
 		}
 
-		public void writeToFile(String data)
+		public void writeToFile()
 		{
 
 			// Get the directory for the user's public pictures directory.
@@ -700,10 +690,22 @@
 
 			try
 			{
-				file.createNewFile();
-				FileOutputStream fOut = new FileOutputStream(file);
+				if(!file.exists())
+				{
+					file.createNewFile();
+				}
+				FileOutputStream fOut = new FileOutputStream(file,true);
 				OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-				myOutWriter.append(data);
+
+				ListAdapter adapter_tmp = messagesContainer.getAdapter();
+				for (int i = 0; i<adapter_tmp.getCount();i++ ) {
+					ChatMessage cMsg = (ChatMessage) adapter_tmp.getItem(i);
+
+					String[] IdFolders = mId.split(" ");
+					String pp = String.format("%s %s\n",IdFolders[1],cMsg.getMessage().toString());
+					myOutWriter.append(pp);
+
+				}
 
 				myOutWriter.close();
 
