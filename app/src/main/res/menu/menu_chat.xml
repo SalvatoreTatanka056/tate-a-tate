@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.chatlayoutexample.ChatActivity">
     <item
+        android:id="@+id/action_contatto"
+        android:orderInCategory="100"
+        android:title="@string/action_contatto" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings" />

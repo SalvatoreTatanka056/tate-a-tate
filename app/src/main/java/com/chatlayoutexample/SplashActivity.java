@@ -24,7 +24,7 @@ public class SplashActivity extends Activity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent=new Intent(getApplicationContext(),ChatActivity.class);
+                Intent intent=new Intent(getApplicationContext(),ListaUtenti.class);
                 startActivity(intent);
 
 

@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.chatlayoutexample.ListaUtenti">
+<item
+android:id="@+id/MENU_1"
+android:title="Nuova Chat"/>
+<item
+android:id="@+id/MENU_2"
+android:title="Aggiorna"/>
+</menu>

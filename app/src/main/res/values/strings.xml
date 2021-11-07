@@ -8,4 +8,9 @@
     <string name="action_calc" >Help</string>
     <string name="help_screen">tate-a-tate</string>
     <string name="action_shared">Condividi</string>
+    <string name="form_intro">Inserimento</string>
+    <string name="name">Nome</string>
+    <string name="lastname">Stringa ID</string>
+    <string name="form_button_label">Conferma</string>
+    <string name="action_contatto">Salva Contatto</string>
 </resources>

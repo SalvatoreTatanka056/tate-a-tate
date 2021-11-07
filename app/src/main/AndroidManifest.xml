@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chatlayoutexample" >
 
-
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -43,13 +42,13 @@
 
         <activity android:name=".HelpActivity">
         </activity>
+        <activity android:name=".ListaUtenti">
+        </activity>
 
         <service
             android:name=".tateatateService"
             android:enabled="true"
             android:exported="true"></service>
-
-
 
     </application>
 
