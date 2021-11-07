@@ -39,7 +39,7 @@ public class ListaUtenti extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.listViewDemo);
         List<Contatto> list = new LinkedList<Contatto>();
 
-        list.add(new Contatto("+", "Nuova Chat", "______________________________________________________"));
+        list.add(new Contatto("+", "Nuova Chat", "═══════════════════════════════"));
         list.add(new Contatto("Giovanni", "Rossi", "1234567890"));
         list.add(new Contatto("Giuseppe", "Bianchi", "1234567890"));
         list.add(new Contatto("Leonardo", "Da Vinci", "1234567890"));
