@@ -26,6 +26,7 @@ android:layout_height="wrap_content">
             android:layout_marginBottom="0dp"
             android:background="#090909"
             android:choiceMode="singleChoice"
+            android:listSelector="@drawable/in_message_bg"
             android:clickable="true"
             android:isScrollContainer="true"
             android:longClickable="true" />

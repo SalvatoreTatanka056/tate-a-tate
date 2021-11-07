@@ -39,7 +39,7 @@ public class ListaUtenti extends AppCompatActivity {
         ListView listView = (ListView) findViewById(R.id.listViewDemo);
         List<Contatto> list = new LinkedList<Contatto>();
 
-        list.add(new Contatto("+", "Nuova Chat", "═══════════════════════════════"));
+        list.add(new Contatto("+", "Nuova Chat", "═══════════════════════════"));
         list.add(new Contatto("Giovanni", "Rossi", "1234567890"));
         list.add(new Contatto("Giuseppe", "Bianchi", "1234567890"));
         list.add(new Contatto("Leonardo", "Da Vinci", "1234567890"));
@@ -55,6 +55,8 @@ public class ListaUtenti extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Contatto data = (Contatto) adapterView.getItemAtPosition(i);
+
+                listView.setItemChecked(i, true);
                 //adapterView.getAdapter().getItem(i);
                 if(data.getCognome().compareTo("Nuova Chat")==0)
                 {

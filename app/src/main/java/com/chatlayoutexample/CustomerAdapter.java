@@ -40,6 +40,8 @@ class CustomAdapter extends ArrayAdapter<Contatto> {
         return convertView;
     }
 
+
+
     private class ViewHolder {
         public TextView name;
         public TextView number;
