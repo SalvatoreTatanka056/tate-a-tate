@@ -55,15 +55,19 @@ public class ListaUtenti extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.listViewDemo);
 
+        String strOld ="KEY";
+        list.clear();
         list.add(new Contatto("+", "Nuova Chat", "═══════════════════════════"));
-        list.add(new Contatto("Giovanni", "Rossi", "1234567890"));
 
-       // list.add(new Contatto("Giovanni", "Rossi", "1234567890"));
-       // list.add(new Contatto("Giuseppe", "Bianchi", "1234567890"));
-       // list.add(new Contatto("Leonardo", "Da Vinci", "1234567890"));
-       // list.add(new Contatto("Mario", "Rossi", "1234567890"));
-       // list.add(new Contatto("Aldo", "Rossi", "1234567890"));
-
+        mLines =  readFromFile(getBaseContext());
+        for (String string : mLines)
+        {
+            String[] arrId = string.split(" ");
+            if(strOld.compareTo(arrId[0] )!=0) {
+                list.add(new Contatto(arrId[0], "", arrId[0]));
+                strOld =  arrId[0];
+            }
+        }
         adapter = new CustomAdapter(this, R.layout.list_item_utenti, list);
         listView.setAdapter(adapter);
 

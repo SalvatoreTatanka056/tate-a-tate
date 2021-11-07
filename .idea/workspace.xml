@@ -34,7 +34,6 @@
       <change beforePath="$PROJECT_DIR$/.gradle/configuration-cache/9qsu3hipfnrequ99dwcvj3jbt/fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/configuration-cache/9qsu3hipfnrequ99dwcvj3jbt/fingerprint.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/configuration-cache/9qsu3hipfnrequ99dwcvj3jbt/state.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/configuration-cache/9qsu3hipfnrequ99dwcvj3jbt/state.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/ChatActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/ChatActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/ListaUtenti.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/ListaUtenti.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -42,7 +41,7 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[8PWWJBKZFUHUFE6L]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[C:\Users\salvatore.romano\.android\avd\pixel_2_r_11_0_-_api_30.avd]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
