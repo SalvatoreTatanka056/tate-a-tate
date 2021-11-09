@@ -14,12 +14,4 @@
         android:focusable="auto"
         android:src="@mipmap/ic_launcher" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/logo_id"
-        android:layout_centerHorizontal="true"
-        android:text="@string/splash_screen"
-        android:textSize="30sp" />
-
 </RelativeLayout>

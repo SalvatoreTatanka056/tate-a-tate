@@ -1,17 +1,20 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/sfondo_sfumato"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center">
 
     <ImageView
         android:id="@+id/logo_id"
-        android:layout_width="188dp"
-        android:layout_height="186dp"
+        android:layout_width="99dp"
+        android:layout_height="100dp"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_centerInParent="false"
-        android:layout_marginTop="102dp"
+        android:layout_marginStart="278dp"
+        android:layout_marginTop="86dp"
         android:focusable="auto"
         android:src="@mipmap/ic_launcher"
         tools:ignore="ImageContrastCheck" />
@@ -20,7 +23,8 @@
         android:layout_width="382dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/logo_id"
-        android:layout_centerHorizontal="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="16dp"
         android:text="tate-a-tate è un'applicazione informatica di messaggistica istantanea non centralizzata, solo tra due persone puo' essere usato un proprio account google, oppure un account creato dallo sviluppatore dueinchat@google.com  l'app è stata ideata per dispositivi mobili android, non richiede numero di telefono, ma richiede solo per il primo accesso le credenziale dell’account google. Ogni start dell'app crea un ID personale da condividere con la persona con cui si vuole comunicare. Gli utenti possono scambiare solo messaggi di testo."
         android:textAllCaps="false"
         android:textSize="12sp" />
@@ -29,7 +33,10 @@
         android:id="@+id/BtnExit"
         android:layout_width="88dp"
         android:layout_height="74dp"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_marginStart="297dp"
+        android:layout_marginTop="493dp"
         android:background="@android:drawable/ic_menu_revert"
         android:visibility="visible"
         tools:ignore="SpeakableTextPresentCheck,DuplicateClickableBoundsCheck,TouchTargetSizeCheck" />

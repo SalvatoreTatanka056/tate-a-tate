@@ -3,7 +3,7 @@
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
 
-        <item name="android:colorPrimary">@color/common_google_signin_btn_text_light</item>
+        <!--<item name="android:colorPrimary">@color/common_google_signin_btn_text_light</item>-->
 
 
         <!-- Customize your theme here. -->

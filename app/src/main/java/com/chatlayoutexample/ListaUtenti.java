@@ -57,14 +57,14 @@ public class ListaUtenti extends AppCompatActivity {
 
         String strOld ="KEY";
         list.clear();
-        list.add(new Contatto("+", "Nuova Chat", "═══════════════════════════"));
+        list.add(new Contatto("+", "Nuova Chat", "Nuova Chat"));
 
         mLines =  readFromFile(getBaseContext());
         for (String string : mLines)
         {
             String[] arrId = string.split(" ");
             if(strOld.compareTo(arrId[0] )!=0) {
-                list.add(new Contatto(arrId[0], "", arrId[0]));
+                list.add(new Contatto("","", arrId[0]));
                 strOld =  arrId[0];
             }
         }
@@ -89,7 +89,7 @@ public class ListaUtenti extends AppCompatActivity {
                 //ClipData clip = ClipData.newPlainText("ID", data.getCognome().toString());
                 //clipboard.setPrimaryClip(clip);
 
-                Toast.makeText(getBaseContext(), data.getCognome(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getBaseContext(), data.getCognome(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -121,14 +121,15 @@ Codice di gestione della voce MENU_1
 
                 String strOld ="KEY";
                 list.clear();
-                list.add(new Contatto("+", "Nuova Chat", "═══════════════════════════"));
+                list.add(new Contatto("+", "Nuova Chat", "Nuova Chat"));
 
                 mLines =  readFromFile(getBaseContext());
+                int i = 0;
                 for (String string : mLines)
                 {
                     String[] arrId = string.split(" ");
                     if(strOld.compareTo(arrId[0] )!=0) {
-                        list.add(new Contatto(arrId[0], "", arrId[0]));
+                        list.add(new Contatto("", "", arrId[0]));
                         strOld =  arrId[0];
                     }
                 }

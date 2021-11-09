@@ -3,7 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center">
+    android:background="@drawable/sfondo_sfumato"
+    android:gravity="center"
+    android:scrollbarThumbHorizontal="@drawable/sfondo_sfumato"
+    android:scrollbarThumbVertical="@drawable/sfondo_sfumato">
 
     <ImageView
         android:id="@+id/logo_id"
@@ -19,8 +22,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/logo_id"
         android:layout_centerHorizontal="true"
+        android:fontFamily="sans-serif-light"
         android:text="@string/splash_screen"
-        android:textAllCaps="false"
-        android:textSize="34sp" />
+        android:textAllCaps="true"
+        android:textSize="34sp"
+        app:fontFamily="serif-monospace" />
 
 </RelativeLayout>
