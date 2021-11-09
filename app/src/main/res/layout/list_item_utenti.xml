@@ -14,15 +14,8 @@
         android:layout_alignParentLeft="true"
         android:layout_marginRight="3dip"
         android:background="@drawable/user"
-        android:padding="3dip">
-
-        <ImageView
-            android:id="@+id/list_image"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
-            android:src="@android:drawable/btn_star_big_on" />
-
-    </LinearLayout>
+        android:padding="3dip"
+        android:orientation="horizontal" />
 
 
     <TextView
@@ -43,7 +36,6 @@
         android:id="@+id/textViewName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/list_image"
         android:layout_alignParentRight="true"
         android:layout_marginRight="5dip"
         android:gravity="right"
