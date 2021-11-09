@@ -62,7 +62,7 @@ public class ListaUtenti extends AppCompatActivity {
         mLines =  readFromFile(getBaseContext());
         for (String string : mLines)
         {
-            String[] arrId = string.split(" ");
+            String[] arrId = string.split("\t");
             if(strOld.compareTo(arrId[0] )!=0) {
                 list.add(new Contatto("","", arrId[0]));
                 strOld =  arrId[0];
@@ -82,6 +82,13 @@ public class ListaUtenti extends AppCompatActivity {
                 {
                     Intent intent=new Intent(getApplicationContext(),ChatActivity.class);
                     startActivity(intent);
+
+                }
+                else
+                {
+                    Intent intentView=new Intent(getApplicationContext(),ChatActivityView.class);
+                    intentView.putExtra("IdSelezionato", data.getTelefono());
+                    startActivity(intentView);
 
                 }
 

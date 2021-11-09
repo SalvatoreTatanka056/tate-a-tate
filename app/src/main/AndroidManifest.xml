@@ -45,6 +45,8 @@
         <activity android:name=".ListaUtenti">
         </activity>
 
+        <activity android:name=".ChatActivityView"></activity>
+
         <service
             android:name=".tateatateService"
             android:enabled="true"

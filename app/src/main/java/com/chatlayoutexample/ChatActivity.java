@@ -702,7 +702,7 @@
 					ChatMessage cMsg = (ChatMessage) adapter_tmp.getItem(i);
 
 					String[] IdFolders = mId.split(" ");
-					String pp = String.format("%s %s\n",IdFolders[1],cMsg.getMessage().toString());
+					String pp = String.format("%s\t%s\t%s\n",IdFolders[1],cMsg.getMessage().toString(),cMsg.getIsme());
 					myOutWriter.append(pp);
 
 				}
