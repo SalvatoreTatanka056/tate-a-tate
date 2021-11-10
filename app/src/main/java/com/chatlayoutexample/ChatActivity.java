@@ -455,7 +455,6 @@
 					}
 
 				}, 2000, 3000);
-
 			}
 		}
 
@@ -674,6 +673,11 @@
 				//startActivity(nuovaPagina);
 
 				mPrgMain.setVisibility(View.VISIBLE);
+
+				/*Deneme dene = new Deneme(4,"Mustafa");
+				Intent i = new Intent(this, Y.class);
+				i.putExtra("sampleObject", messagesContainer);
+				startActivity(i);*/
 
 				writeToFile();
 

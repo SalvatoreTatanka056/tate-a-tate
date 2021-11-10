@@ -41,7 +41,6 @@ public class ChatAdapter extends BaseAdapter {
         }
     }
 
-
     public void clear() {
         chatMessages.clear();
     }
