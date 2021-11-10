@@ -225,8 +225,8 @@
 				}
 			});
 
-		 // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		//	locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
+		 //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		 //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
 
 			notificationManager = getSystemService(NotificationManager.class);
 
@@ -342,7 +342,11 @@
 										.setApplicationName("Drive API Migration")
 										.build();
 
+
 						mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
+
+						/* --- flag per controllare e salvare in vecchio Id creato */
+						/* --- e riconnettere con il vecchio ID se si salva la chat */
 
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ITALY);
 						String time = sdf.format(new Date());
@@ -351,10 +355,13 @@
 						String FolderC = String.format("CHAT_CONNECT_%s", time);
 						createFolder(FolderC, "F");
 						mNomeFile = String.format("%s_C", getMyPhoneNumber());
+
 						createFile(mNomeFile, "");
 						createFolder(Folder, "C");
 						mBtnPlay.setEnabled(true);
 						sendBtn.setEnabled(true);
+
+						/* --- */
 
 					})
 					.addOnFailureListener(exception -> Log.e(TAG, "Unable to sign in.", exception));
