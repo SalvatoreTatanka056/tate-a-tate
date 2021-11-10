@@ -95,7 +95,6 @@ public class ListaUtenti extends AppCompatActivity {
                 //ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 //ClipData clip = ClipData.newPlainText("ID", data.getCognome().toString());
                 //clipboard.setPrimaryClip(clip);
-
                 //Toast.makeText(getBaseContext(), data.getCognome(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -120,9 +119,6 @@ public class ListaUtenti extends AppCompatActivity {
                 Intent intent=new Intent(getApplicationContext(),ChatActivity.class);
                 startActivity(intent);
 
-/*
-Codice di gestione della voce MENU_1
-*/
                 break;
             case R.id.MENU_2:
 
@@ -134,7 +130,7 @@ Codice di gestione della voce MENU_1
                 int i = 0;
                 for (String string : mLines)
                 {
-                    String[] arrId = string.split(" ");
+                    String[] arrId = string.split("\t");
                     if(strOld.compareTo(arrId[0] )!=0) {
                         list.add(new Contatto("", "", arrId[0]));
                         strOld =  arrId[0];
@@ -151,8 +147,7 @@ Codice di gestione della voce MENU_1
     private ArrayList<String> readFromFile(Context context) {
 
         ArrayList<String> ret = new ArrayList<>();
-
-
+        
             //java.io.File sdcard = Environment.getExternalStorageDirectory() ;
             java.io.File sdcard  = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
 
@@ -196,6 +191,5 @@ Codice di gestione della voce MENU_1
             return "";
         }
     }
-
 }
 
