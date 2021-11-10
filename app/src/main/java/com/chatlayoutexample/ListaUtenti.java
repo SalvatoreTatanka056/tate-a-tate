@@ -147,7 +147,7 @@ public class ListaUtenti extends AppCompatActivity {
     private ArrayList<String> readFromFile(Context context) {
 
         ArrayList<String> ret = new ArrayList<>();
-        
+
             //java.io.File sdcard = Environment.getExternalStorageDirectory() ;
             java.io.File sdcard  = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
 
