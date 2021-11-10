@@ -639,8 +639,8 @@
 
 			if (id == R.id.action_calc) {
 
-				Intent nuovaPagina = new Intent(this, HelpActivity.class);
-				startActivity(nuovaPagina);
+				//Intent nuovaPagina = new Intent(this, HelpActivity.class);
+				//startActivity(nuovaPagina);
 
 				return true;
 			}
@@ -663,8 +663,20 @@
 
 			if (id == R.id.action_contatto) {
 
+				//Intent nuovaPagina = new Intent(this, InputActivity.class);
+				//startActivity(nuovaPagina);
+
+				mPrgMain.setVisibility(View.VISIBLE);
+
 				writeToFile();
 
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+				mPrgMain.setVisibility(View.INVISIBLE);
 
 				return true;
 			}
@@ -672,7 +684,7 @@
 			return super.onOptionsItemSelected(item);
 		}
 
-		public void writeToFile()
+		public void writeToFile(/*String strNota*/)
 		{
 
 			// Get the directory for the user's public pictures directory.
