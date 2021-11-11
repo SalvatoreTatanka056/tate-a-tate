@@ -220,6 +220,8 @@
 				@Override
 				public void onClick(View view) {
 
+
+
 					ChatAdapter MessageAdapter = (ChatAdapter) messagesContainer.getAdapter();
 					MessageAdapter.clear();
 					adapter.notifyDataSetChanged();
@@ -448,6 +450,10 @@
 				mIDMessagioIniziale = 0;
 				messageET.setEnabled(true);
 				mPrgMain.setVisibility(View.INVISIBLE);
+
+				Intent serviceIntent = new Intent(ChatActivity.this, MyServiceChat.class);
+				serviceIntent.putExtra("IDCartelle", mId);
+				startService(serviceIntent);
 
 				myTimer = new Timer();
 				myTimer.schedule(new TimerTask() {
@@ -831,16 +837,6 @@
 			destLat = location.getLatitude();
 			destLong = location.getLongitude();
 
-		}
-
-		// Method to start the service
-		public void startService(View view) {
-			startService(new Intent(getBaseContext(), tateatateService.class));
-		}
-
-		// Method to stop the service
-		public void stopService(View view) {
-			stopService(new Intent(getBaseContext(), tateatateService.class));
 		}
 
 

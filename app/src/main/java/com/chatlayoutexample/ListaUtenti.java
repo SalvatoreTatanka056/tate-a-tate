@@ -82,6 +82,7 @@ public class ListaUtenti extends AppCompatActivity {
                 //adapterView.getAdapter().getItem(i);
                 if(data.getCognome().compareTo("Nuova Chat")==0)
                 {
+
                     Intent intent=new Intent(getApplicationContext(),ChatActivity.class);
                     startActivity(intent);
 
@@ -94,10 +95,6 @@ public class ListaUtenti extends AppCompatActivity {
 
                 }
 
-                //ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                //ClipData clip = ClipData.newPlainText("ID", data.getCognome().toString());
-                //clipboard.setPrimaryClip(clip);
-                //Toast.makeText(getBaseContext(), data.getCognome(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -157,7 +154,7 @@ public class ListaUtenti extends AppCompatActivity {
                          java.io.File sdcard  = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
                          java.io.File  file = new java.io.File(sdcard, "conversazioni.txt");
 
-                         //file.delete();
+                         file.delete();
                          dialog.dismiss();
 
                      }
@@ -167,6 +164,7 @@ public class ListaUtenti extends AppCompatActivity {
 
                      @Override
                      public void onClick(DialogInterface dialog, int which) {
+
 
                          // Do nothing
                          dialog.dismiss();
@@ -178,7 +176,6 @@ public class ListaUtenti extends AppCompatActivity {
 
                  break;
         }
-
         return true;
     }
 

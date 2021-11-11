@@ -1,61 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chatlayoutexample" >
+    xmlns:dist="http://schemas.android.com/apk/distribution"
+    package="com.chatlayoutexample">
+
+    <dist:module dist:instant="true" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <!-- Permissions required by GoogleAuthUtil -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- Permissions required by GoogleAuthUtil -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
     <uses-permission android:name="android.permission.READ_SMS" />
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:supportsRtl="true">
-
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <service
+            android:name=".MyServiceChat"
+            android:enabled="true"
+            android:exported="true"></service>
+        <!--
+        <receiver android:name=".autostart">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        -->
         <activity
-            android:name=".SplashActivity" android:theme="@style/SplashTheme">
+            android:name=".SplashActivity"
+            android:theme="@style/SplashTheme">
             android:label="@string/title_activity_chat" >
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".ChatActivity">
             <intent-filter>
-
                 <category android:name="android.intent.category.APP_CALCULATOR" />
             </intent-filter>
         </activity>
+        <activity android:name=".HelpActivity"></activity>
+        <activity android:name=".ListaUtenti"></activity>
+        <activity android:name=".ChatActivityView" />
 
-        <activity android:name=".HelpActivity">
-        </activity>
-        <activity android:name=".ListaUtenti">
-        </activity>
-
-        <activity android:name=".ChatActivityView"></activity>
-
-        <service
-            android:name=".tateatateService"
-            android:enabled="true"
-            android:exported="true"></service>
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-
     </application>
 
 </manifest>
-
