@@ -141,6 +141,8 @@
 			setContentView(R.layout.activity_chat);
 
 			mIdIntelocutore = (EditText) findViewById(R.id.editTextTextMultiLine);
+			mIdIntelocutore.setEnabled(false);
+
 			mPrgMain = (ProgressBar) findViewById(R.id.prgMain);
 			mBtnCollega = (ImageButton) findViewById(R.id.BtnExit);
 			mBtnCancella = (ImageButton) findViewById(R.id.btnCancella);
