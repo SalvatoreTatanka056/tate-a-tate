@@ -78,6 +78,7 @@ public class MyServiceChat extends Service {
         mDrive.DeleteFile(IdFolders[1]);
 
 
+
         super.onTaskRemoved(rootIntent);
     }
 
