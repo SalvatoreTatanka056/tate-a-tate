@@ -1,9 +1,11 @@
 package com.chatlayoutexample;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
@@ -139,7 +141,44 @@ public class ListaUtenti extends AppCompatActivity {
                 adapter = new CustomAdapter(this, R.layout.list_item_utenti, list);
                 listView.setAdapter(adapter);
                 break;
+
+             case R.id.MENU_3:
+
+                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                 builder.setTitle("Conferma");
+                 builder.setMessage("Sarà cancellato il file delle conversazioni salvate vuoi continuare?");
+
+                 builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                     public void onClick(DialogInterface dialog, int which) {
+                         // Do nothing but close the dialog
+
+                         java.io.File sdcard  = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
+                         java.io.File  file = new java.io.File(sdcard, "conversazioni.txt");
+
+                         //file.delete();
+                         dialog.dismiss();
+
+                     }
+                 });
+
+                 builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
+                     @Override
+                     public void onClick(DialogInterface dialog, int which) {
+
+                         // Do nothing
+                         dialog.dismiss();
+                     }
+                 });
+
+                 AlertDialog alert = builder.create();
+                 alert.show();
+
+                 break;
         }
+
         return true;
     }
 

@@ -1,11 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.chatlayoutexample.ListaUtenti">
-<item
-android:id="@+id/MENU_1"
-android:title="Nuova Chat"/>
-<item
-android:id="@+id/MENU_2"
-android:title="Aggiorna"/>
+    xmlns:tools="http://schemas.android.com/tools">
+    <item
+        android:id="@+id/MENU_1"
+        android:title="Nuova Chat" />
+    <item
+        android:id="@+id/MENU_2"
+        android:title="Aggiorna" />
+
+    <item
+        android:id="@+id/MENU_3"
+        android:title="Elimina Conversazioni" />
 </menu>
