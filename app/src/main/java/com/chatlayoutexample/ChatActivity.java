@@ -13,6 +13,7 @@
 	import android.location.Location;
 	import android.location.LocationListener;
 	import android.location.LocationManager;
+	import android.media.MediaPlayer;
 	import android.net.Uri;
 	import android.os.Bundle;
 	import android.os.Environment;
@@ -131,6 +132,8 @@
 		private Encryption encryption = Encryption.getDefault("Key", "Salt", new byte[16]);
 		NotificationManager notificationManager ;
 		private boolean mflagAttiva = true;
+		private MediaPlayer player;
+
 
 		private Timer myTimer;
 		private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
@@ -451,9 +454,9 @@
 				messageET.setEnabled(true);
 				mPrgMain.setVisibility(View.INVISIBLE);
 
-				Intent serviceIntent = new Intent(ChatActivity.this, MyServiceChat.class);
+			/*	Intent serviceIntent = new Intent(ChatActivity.this, MyServiceChat.class);
 				serviceIntent.putExtra("IDCartelle", mId);
-				startService(serviceIntent);
+				startService(serviceIntent);*/
 
 				myTimer = new Timer();
 				myTimer.schedule(new TimerTask() {
@@ -494,6 +497,8 @@
 
 							if(mflagAttiva == false) {
 
+
+
 								String CHANNEL_ID = "my_channel_id";
 								String channel_name = "channel_name";
 								String channel_description = "channel_description";
@@ -502,6 +507,10 @@
 									channel.setDescription(channel_description);
 									notificationManager.createNotificationChannel(channel);
 								}
+								player = MediaPlayer.create( this, R.raw.radarblip);
+								player.setLooping( false );
+								player.start();
+
 								NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
 										.setSmallIcon(android.R.drawable.star_on)
 										.setContentTitle("tate-a-tate: Nuova notifica!!")

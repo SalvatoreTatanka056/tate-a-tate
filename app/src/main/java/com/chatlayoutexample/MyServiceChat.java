@@ -1,11 +1,15 @@
 package com.chatlayoutexample;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -24,13 +28,13 @@ public class MyServiceChat extends Service {
     private DriveServiceHelper mDrive;
     private String IDCartelle;
 
+    private MediaPlayer player;
 
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
-
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -39,10 +43,17 @@ public class MyServiceChat extends Service {
     // on calling this method
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        requestSignIn();
+        //requestSignIn();
 
         Bundle extras = intent.getExtras();
         IDCartelle = (String) extras.get("IDCartelle");
+
+        player = MediaPlayer.create( this, R.raw.radarblip);
+
+        player.setLooping( true );
+
+        player.start();
+
 
         return START_STICKY;
     }
@@ -55,6 +66,9 @@ public class MyServiceChat extends Service {
                         .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
                         .build();
         GoogleSignInClient client = GoogleSignIn.getClient(this, signInOptions);
+
+
+
 
     }
 
@@ -72,11 +86,24 @@ public class MyServiceChat extends Service {
     }
     @Override
     public void onTaskRemoved(Intent rootIntent){
+
+
+        /*Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());
+        restartServiceIntent.setPackage(getPackageName());
+
+        PendingIntent restartServicePendingIntent = PendingIntent.getService(getApplicationContext(), 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager alarmService = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        alarmService.set(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + 1000,
+                restartServicePendingIntent);
+
+
         String[] IdFolders = IDCartelle.split(" ");
 
-        mDrive.DeleteFile(IdFolders[0]);
-        mDrive.DeleteFile(IdFolders[1]);
 
+        mDrive.DeleteFile(IdFolders[0]);
+        mDrive.DeleteFile(IdFolders[1]);*/
 
 
         super.onTaskRemoved(rootIntent);
