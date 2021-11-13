@@ -1,5 +1,6 @@
 package com.chatlayoutexample;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -7,6 +8,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -25,8 +27,10 @@ import android.widget.Toast;
 
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -50,6 +54,12 @@ public class ListaUtenti extends AppCompatActivity {
     List<Contatto> list = new LinkedList<Contatto>();
     ListView listView;
 
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +71,14 @@ public class ListaUtenti extends AppCompatActivity {
         list.clear();
         list.add(new Contatto("+", "Nuova Chat", "Nuova Chat"));
 
-        mLines =  readFromFile(getBaseContext());
+       // verifyStoragePermissions(this);
+
+        try {
+            mLines =  readFromFile(getBaseContext());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         for (String string : mLines)
         {
             String[] arrId = string.split("\t");
@@ -125,7 +142,11 @@ public class ListaUtenti extends AppCompatActivity {
                 list.clear();
                 list.add(new Contatto("+", "Nuova Chat", "Nuova Chat"));
 
-                mLines =  readFromFile(getBaseContext());
+                try {
+                    mLines =  readFromFile(getBaseContext());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 int i = 0;
                 for (String string : mLines)
                 {
@@ -165,7 +186,6 @@ public class ListaUtenti extends AppCompatActivity {
                      @Override
                      public void onClick(DialogInterface dialog, int which) {
 
-
                          // Do nothing
                          dialog.dismiss();
                      }
@@ -180,19 +200,20 @@ public class ListaUtenti extends AppCompatActivity {
     }
 
 
-    private ArrayList<String> readFromFile(Context context) {
+    private ArrayList<String> readFromFile(Context context) throws IOException {
 
         ArrayList<String> ret = new ArrayList<>();
 
             //java.io.File sdcard = Environment.getExternalStorageDirectory() ;
-            java.io.File sdcard  = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
+            java.io.File sdcard  = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "//CONVERSAZIONI//conversazioni.txt");
 
-            java.io.File  file = new java.io.File(sdcard, "conversazioni.txt");
-
-            StringBuilder text = new StringBuilder();
+           //java.io.File  file = new java.io.File(sdcard, "conversazioni.txt");
+           StringBuilder text = new StringBuilder();
 
             try {
-                BufferedReader br = new BufferedReader(new FileReader(file));
+                BufferedReader br = new BufferedReader(new FileReader(sdcard));
+               // InputStream is = this.getResources().openRawResource(R.raw.sample);
+
                 String line;
 
                 while ((line = br.readLine()) != null) {
@@ -207,6 +228,35 @@ public class ListaUtenti extends AppCompatActivity {
         return ret;
     }
 
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
+    }
+
+
+
+    public static String read(String strFile) throws IOException {
+        File file = new File(strFile);
+        StringBuilder sb = new StringBuilder();
+        if(file.exists()) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            reader.close();
+        }
+        return sb.toString();
+    }
 
     public String read_file(Context context, String filename) {
         try {

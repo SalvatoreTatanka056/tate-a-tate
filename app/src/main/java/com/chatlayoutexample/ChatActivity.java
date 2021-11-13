@@ -1,12 +1,14 @@
 	package com.chatlayoutexample;
 
 	import android.app.Activity;
+	import android.app.AlertDialog;
 	import android.app.NotificationChannel;
 	import android.app.NotificationManager;
 	import android.content.ClipData;
 	import android.content.ClipboardManager;
 	import android.content.ComponentName;
 	import android.content.Context;
+	import android.content.DialogInterface;
 	import android.content.Intent;
 	import android.content.ServiceConnection;
 	import android.graphics.Rect;
@@ -611,17 +613,40 @@
 			mOpenFileId = fileId;
 		}
 
+		private boolean blnEsito=false;
 
 		@Override
 		public void onDestroy() {
-			super.onDestroy();
 
+			blnEsito=true;
+			// Do nothing but close the dialog
 			String[] IdFolders = mId.split(" ");
 
 			DeleteFile(IdFolders[1]);
 			DeleteFile(IdFolders[2]);
 
-			Toast.makeText(getBaseContext(), "Chiusura Chat, chiudere e riaprire.", Toast.LENGTH_LONG);
+			if(blnEsito) {
+				super.onDestroy();
+			}
+
+		}
+
+		@Override
+		public void onBackPressed() {
+			new AlertDialog.Builder(this)
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					.setTitle("Closing app")
+					.setMessage("Sei sicuro di voler chiudere questa attività? ")
+					.setPositiveButton("Yes", new DialogInterface.OnClickListener()
+					{
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							finish();
+						}
+
+					})
+					.setNegativeButton("No", null)
+					.show();
 		}
 
 		@Override
@@ -663,11 +688,6 @@
 
 				Intent nuovaPagina = new Intent(this, HelpActivity.class);
 				startActivity(nuovaPagina);
-			/*	Intent intent = new Intent();
-				intent.setAction(Intent.ACTION_MAIN);
-				intent.addCategory(Intent.CATEGORY_APP_CALCULATOR);
-				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				startActivity(intent);*/
 
 				return true;
 			}
@@ -690,16 +710,7 @@
 
 			if (id == R.id.action_contatto) {
 
-				mPrgMain.setVisibility(View.VISIBLE);
 				writeToFile();
-
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-
-				mPrgMain.setVisibility(View.INVISIBLE);
 
 				return true;
 			}
@@ -713,12 +724,10 @@
 			// Get the directory for the user's public pictures directory.
 			java.io.File fileConnectChat = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
 
-			// Make sure the path directory exists.
 			if(!fileConnectChat.exists())
 			{
 				// Make it, if it doesn't exit
 				fileConnectChat.mkdirs();
-
 			}
 
 			final java.io.File file = new java.io.File(fileConnectChat, "conversazioni.txt");
@@ -729,17 +738,20 @@
 				{
 					file.createNewFile();
 				}
+
 				FileOutputStream fOut = new FileOutputStream(file,true);
 				OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
 
 				ListAdapter adapter_tmp = messagesContainer.getAdapter();
-				for (int i = 0; i<adapter_tmp.getCount();i++ ) {
+				for (int i = 0; i<adapter_tmp.getCount();i++ )
+				{
 					ChatMessage cMsg = (ChatMessage) adapter_tmp.getItem(i);
 
 					String[] IdFolders = mId.split(" ");
-					String pp = String.format("%s\t%s\t%s\n",IdFolders[1],cMsg.getMessage().toString(),cMsg.getIsme());
-					myOutWriter.append(pp);
+					String WithoutLineFeed = cMsg.getMessage().toString().replace("\n"," ");
 
+					String pp = String.format("%s\t%s\t%s\n",IdFolders[1],WithoutLineFeed,cMsg.getIsme());
+					myOutWriter.append(pp);
 				}
 
 				myOutWriter.close();
