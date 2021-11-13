@@ -495,9 +495,8 @@
 						.addOnSuccessListener(nameAndContent -> {
 							String ContentFile =encryption.decryptOrNull(nameAndContent.second);
 
-							if(mflagAttiva == false) {
-
-
+							if(mflagAttiva == false)
+							{
 
 								String CHANNEL_ID = "my_channel_id";
 								String channel_name = "channel_name";
@@ -662,8 +661,13 @@
 
 			if (id == R.id.action_calc) {
 
-				//Intent nuovaPagina = new Intent(this, HelpActivity.class);
-				//startActivity(nuovaPagina);
+				Intent nuovaPagina = new Intent(this, HelpActivity.class);
+				startActivity(nuovaPagina);
+			/*	Intent intent = new Intent();
+				intent.setAction(Intent.ACTION_MAIN);
+				intent.addCategory(Intent.CATEGORY_APP_CALCULATOR);
+				intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(intent);*/
 
 				return true;
 			}
@@ -686,16 +690,7 @@
 
 			if (id == R.id.action_contatto) {
 
-				//Intent nuovaPagina = new Intent(this, InputActivity.class);
-				//startActivity(nuovaPagina);
-
 				mPrgMain.setVisibility(View.VISIBLE);
-
-				/*Deneme dene = new Deneme(4,"Mustafa");
-				Intent i = new Intent(this, Y.class);
-				i.putExtra("sampleObject", messagesContainer);
-				startActivity(i);*/
-
 				writeToFile();
 
 				try {

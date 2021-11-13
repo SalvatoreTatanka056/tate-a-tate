@@ -41,7 +41,7 @@
             android:label="@string/title_activity_chat" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -49,6 +49,7 @@
             <intent-filter>
                 <category android:name="android.intent.category.APP_CALCULATOR" />
             </intent-filter>
+
         </activity>
         <activity android:name=".HelpActivity"></activity>
         <activity android:name=".ListaUtenti"></activity>
@@ -58,5 +59,7 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
     </application>
+
+
 
 </manifest>
