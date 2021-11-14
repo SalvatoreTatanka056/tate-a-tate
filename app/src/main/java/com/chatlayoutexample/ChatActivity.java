@@ -58,8 +58,10 @@
 
 	import org.apache.commons.codec.binary.Base64;
 
+	import java.io.FileInputStream;
 	import java.io.FileOutputStream;
 	import java.io.IOException;
+	import java.io.InputStreamReader;
 	import java.io.OutputStreamWriter;
 	import java.io.UnsupportedEncodingException;
 	import java.security.InvalidAlgorithmParameterException;
@@ -635,8 +637,8 @@
 		public void onBackPressed() {
 			new AlertDialog.Builder(this)
 					.setIcon(android.R.drawable.ic_dialog_alert)
-					.setTitle("Closing app")
-					.setMessage("Sei sicuro di voler chiudere questa attività? ")
+					.setTitle("Chiusura app")
+					.setMessage("Sei sicuro di voler chiudere tate-a-tate ? ")
 					.setPositiveButton("Yes", new DialogInterface.OnClickListener()
 					{
 						@Override
@@ -855,5 +857,58 @@
 
 		}
 
+		static final int READ_BLOCK_SIZE = 150;
 
+
+		public void ScritturaFileFrasi()
+		{
+
+			try
+			{
+				FileOutputStream fOut = openFileOutput("mio_file.txt",MODE_WORLD_READABLE);
+				OutputStreamWriter osw = new OutputStreamWriter(fOut);
+
+				osw.write("str");
+				osw.flush();
+				osw.close();
+
+				Toast.makeText(getBaseContext(),
+						"Dati salvati correttamente.",
+						Toast.LENGTH_SHORT).show();
+
+			}
+			catch (IOException ioe)
+			{
+				ioe.printStackTrace();
+			}
+		}
+
+		public void CaricaFile() {
+			try
+			{
+				FileInputStream fIn = openFileInput("mio_file.txt");
+
+				InputStreamReader isr = new InputStreamReader(fIn);
+
+				char[] inputBuffer = new char[READ_BLOCK_SIZE];
+				String s = "";
+
+				int charRead;
+
+				while ((charRead = isr.read(inputBuffer))>0)
+				{
+					String readString = String.copyValueOf(inputBuffer, 0,charRead);
+					s += readString;
+					inputBuffer = new char[READ_BLOCK_SIZE];
+				}
+
+				Toast.makeText(getBaseContext(),
+						"Dati caricati correttamente.",
+						Toast.LENGTH_SHORT).show();
+			}
+			catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
+		}
 	}
+
