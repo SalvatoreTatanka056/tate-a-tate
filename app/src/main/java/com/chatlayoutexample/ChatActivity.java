@@ -60,6 +60,7 @@
 
 	import java.io.FileInputStream;
 	import java.io.FileOutputStream;
+	import java.io.FileWriter;
 	import java.io.IOException;
 	import java.io.InputStreamReader;
 	import java.io.OutputStreamWriter;
@@ -137,7 +138,6 @@
 		NotificationManager notificationManager ;
 		private boolean mflagAttiva = true;
 		private MediaPlayer player;
-
 
 		private Timer myTimer;
 		private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
@@ -908,6 +908,25 @@
 			}
 			catch (IOException ioe) {
 				ioe.printStackTrace();
+			}
+		}
+
+		public void writeFileOnInternalStorage(Context mcoContext,String sFileName, String sBody){
+			java.io.File file = new java.io.File(mcoContext.getFilesDir(),"CONVERSAZIONI");
+			if(!file.exists()){
+				file.mkdir();
+			}
+
+			try{
+				java.io.File gpxfile = new java.io.File(file, sFileName);
+				FileWriter writer = new FileWriter(gpxfile);
+				writer.append(sBody);
+				writer.flush();
+				writer.close();
+
+			}catch (Exception e){
+				e.printStackTrace();
+
 			}
 		}
 	}

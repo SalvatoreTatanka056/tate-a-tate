@@ -5,7 +5,6 @@
     android:layout_height="wrap_content">
 
 
-
     <RelativeLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
@@ -140,7 +139,7 @@
             android:minHeight="48dp"
             app:srcCompat="@android:drawable/ic_popup_sync"
             app:tint="#FFFFFF"
-            tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck"/>
+            tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck" />
 
 
     </RelativeLayout>
