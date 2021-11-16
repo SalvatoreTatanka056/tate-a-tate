@@ -22,6 +22,12 @@
         android:title="@string/action_shared" />
 
     <item
+        android:id="@+id/action_input"
+        android:orderInCategory="100"
+        android:title="@string/action_input" />
+
+
+    <item
         android:id="@+id/action_calc"
         android:orderInCategory="100"
         android:title="@string/action_calc" />

@@ -13,7 +13,7 @@ import androidx.core.app.NotificationCompat;
 
 import static android.R.id.message;
 
-class InputActivity extends AppCompatActivity {
+public class InputActivity extends AppCompatActivity {
     Button send;
     EditText txtNote;
 
@@ -29,10 +29,7 @@ class InputActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if(!txtNote.getText().toString().trim().isEmpty()) {
-
-                    Intent sendMessage = new Intent(InputActivity.this, ChatActivity.class);
-                    sendMessage.putExtra("UserInput", txtNote.getText());
-                    startActivity(sendMessage);
+                    //DUMMY
                 }
 
             }

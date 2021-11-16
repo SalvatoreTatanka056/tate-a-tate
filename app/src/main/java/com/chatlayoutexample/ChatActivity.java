@@ -227,8 +227,6 @@
 				@Override
 				public void onClick(View view) {
 
-
-
 					ChatAdapter MessageAdapter = (ChatAdapter) messagesContainer.getAdapter();
 					MessageAdapter.clear();
 					adapter.notifyDataSetChanged();
@@ -713,6 +711,15 @@
 			if (id == R.id.action_contatto) {
 
 				writeToFile();
+
+				return true;
+			}
+
+			if(id == R.id.action_input)
+			{
+
+				Intent PaginaInputFrase = new Intent(this, InputActivity.class);
+				startActivity(PaginaInputFrase);
 
 				return true;
 			}

@@ -54,12 +54,6 @@ public class ListaUtenti extends AppCompatActivity {
     List<Contatto> list = new LinkedList<Contatto>();
     ListView listView;
 
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,12 +66,9 @@ public class ListaUtenti extends AppCompatActivity {
         list.add(new Contatto("+", "Nuova Chat", "Nuova Chat"));
 
        // verifyStoragePermissions(this);
+        //@OnShowRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        mLines =  readFromFile(getBaseContext());
 
-        try {
-            mLines =  readFromFile(getBaseContext());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         for (String string : mLines)
         {
@@ -142,11 +133,8 @@ public class ListaUtenti extends AppCompatActivity {
                 list.clear();
                 list.add(new Contatto("+", "Nuova Chat", "Nuova Chat"));
 
-                try {
-                    mLines =  readFromFile(getBaseContext());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                mLines =  readFromFile(getBaseContext());
+
                 int i = 0;
                 for (String string : mLines)
                 {
@@ -200,7 +188,7 @@ public class ListaUtenti extends AppCompatActivity {
     }
 
 
-    private ArrayList<String> readFromFile(Context context) throws IOException {
+    private ArrayList<String> readFromFile(Context context)  {
 
         ArrayList<String> ret = new ArrayList<>();
 
@@ -226,20 +214,6 @@ public class ListaUtenti extends AppCompatActivity {
             }
 
         return ret;
-    }
-
-    public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
     }
 
 
