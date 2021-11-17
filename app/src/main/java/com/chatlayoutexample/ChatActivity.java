@@ -30,6 +30,7 @@
 	import android.view.MenuItem;
 	import android.view.View;
 	import android.widget.AdapterView;
+	import android.widget.ArrayAdapter;
 	import android.widget.Button;
 	import android.widget.EditText;
 	import android.widget.ImageButton;
@@ -37,6 +38,7 @@
 	import android.widget.ListView;
 	import android.widget.ProgressBar;
 	import android.widget.RelativeLayout;
+	import android.widget.Spinner;
 	import android.widget.Toast;
 
 	import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -138,6 +140,12 @@
 		NotificationManager notificationManager ;
 		private boolean mflagAttiva = true;
 		private MediaPlayer player;
+		Spinner spino;
+
+		String[] courses = { "C", "Data structures",
+				"Interview prep", "Algorithms",
+				"DSA with java", "OS" };
+
 
 		private Timer myTimer;
 		private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
@@ -180,7 +188,6 @@
 						ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 						mIdIntelocutore.setText(clipboard.getText().toString());
 					}
-
 				}
 			});
 
@@ -208,7 +215,6 @@
 			requestSignIn();
 
 			messageET.setEnabled(false);
-
 			messagesContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -234,11 +240,26 @@
 				}
 			});
 
-		 //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		 //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
+			spino = findViewById(R.id.spinner);
+			/*spino.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+						//
+				}
+			});*/
+
+			//spino.setOnItemSelectedListener(this);
+			ArrayAdapter ad = new ArrayAdapter(this,	android.R.layout.simple_spinner_item,courses);
+			ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+			spino.setAdapter(ad);
+			spino.setVisibility(0);
+			spino.setEnabled(false);
+
+		   //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		   //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
 
 			notificationManager = getSystemService(NotificationManager.class);
-
 
 		}
 
@@ -696,13 +717,21 @@
 
 				ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 
+
+				if(clipboard.getText().toString().isEmpty()) {
+					ClipData clip = ClipData.newPlainText("ID", "nessun test");
+					clipboard.setPrimaryClip(clip);
+
+				}
+
 				Intent sendIntent = new Intent();
 				sendIntent.setAction(Intent.ACTION_SEND);
-				sendIntent.putExtra(Intent.EXTRA_TEXT,clipboard.getText().toString());
+				sendIntent.putExtra(Intent.EXTRA_TEXT, clipboard.getText().toString());
 				sendIntent.setType("text/plain");
 
 				Intent shareIntent = Intent.createChooser(sendIntent, null);
 				startActivity(shareIntent);
+
 
 				return true;
 
@@ -721,6 +750,13 @@
 				Intent PaginaInputFrase = new Intent(this, InputActivity.class);
 				startActivity(PaginaInputFrase);
 
+				return true;
+			}
+
+			if(id == R.id.action_lista)
+			{
+
+				spino.setFocusable(true);
 				return true;
 			}
 

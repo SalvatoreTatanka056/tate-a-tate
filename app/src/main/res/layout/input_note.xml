@@ -19,6 +19,7 @@
         android:ems="10"
         android:inputType="textPersonName"
         android:minHeight="48dp"
+        android:textColor="#FFFFFF"
         tools:ignore="SpeakableTextPresentCheck" />
 
 

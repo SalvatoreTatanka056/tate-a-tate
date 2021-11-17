@@ -141,6 +141,17 @@
             app:tint="#FFFFFF"
             tools:ignore="SpeakableTextPresentCheck,ImageContrastCheck" />
 
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="334dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="57dp"
+            android:layout_marginRight="57dp"
+            android:layout_marginBottom="21dp" />
+
 
     </RelativeLayout>
 </LinearLayout>

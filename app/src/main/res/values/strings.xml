@@ -14,4 +14,5 @@
     <string name="form_button_label">Conferma</string>
     <string name="action_contatto">Salva Contatto</string>
     <string name="action_input">Inserire una nuova frase</string>
+    <string name="action_lista">Lista frasi</string>
 </resources>
