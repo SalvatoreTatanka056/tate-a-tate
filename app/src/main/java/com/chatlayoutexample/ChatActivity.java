@@ -241,20 +241,28 @@
 			});
 
 			spino = findViewById(R.id.spinner);
-			/*spino.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-						//
-				}
-			});*/
 
-			//spino.setOnItemSelectedListener(this);
+
+			spino.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+				@Override
+				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+
+					spino.setVisibility(0);
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> parent) {
+					spino.setVisibility(0);
+				}
+			});
+
 			ArrayAdapter ad = new ArrayAdapter(this,	android.R.layout.simple_spinner_item,courses);
 			ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
 			spino.setAdapter(ad);
-			spino.setVisibility(0);
+			spino.setVisibility(1);
 			spino.setEnabled(false);
+
 
 		   //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		   //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
@@ -352,7 +360,6 @@
 					Settings.Secure.ANDROID_ID);
 			return device_unique_id;
 		}
-
 
 		private void handleSignInResult(Intent result) {
 			GoogleSignIn.getSignedInAccountFromIntent(result)
@@ -732,7 +739,6 @@
 				Intent shareIntent = Intent.createChooser(sendIntent, null);
 				startActivity(shareIntent);
 
-
 				return true;
 
 			}
@@ -755,8 +761,10 @@
 
 			if(id == R.id.action_lista)
 			{
+				spino.setVisibility(1);
+				spino.setEnabled(false);
+				spino.performClick();
 
-				spino.setFocusable(true);
 				return true;
 			}
 
@@ -815,8 +823,6 @@
 			if (location != null) {
 				double pLong = location.getLongitude();
 				double pLat = location.getLatitude();
-
-
 			}
 		}
 
