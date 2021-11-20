@@ -60,8 +60,10 @@
 
 	import org.apache.commons.codec.binary.Base64;
 
+	import java.io.BufferedReader;
 	import java.io.FileInputStream;
 	import java.io.FileOutputStream;
+	import java.io.FileReader;
 	import java.io.FileWriter;
 	import java.io.IOException;
 	import java.io.InputStreamReader;
@@ -141,6 +143,7 @@
 		private boolean mflagAttiva = true;
 		private MediaPlayer player;
 		Spinner spino;
+		Boolean flagVisibile;
 
 		String[] courses = { "C", "Data structures",
 				"Interview prep", "Algorithms",
@@ -240,15 +243,30 @@
 				}
 			});
 
+			flagVisibile = false;
+
 			spino = findViewById(R.id.spinner);
+			List<String> mLines =  readFromFile(getBaseContext());
+			ArrayAdapter ad = new ArrayAdapter(this,	android.R.layout.simple_spinner_item,mLines);
+
+			spino.setAdapter(ad);
+			spino.setVisibility(0);
+			spino.setEnabled(false);
+			spino.setFocusable(false);
 
 
 			spino.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override
 				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
+					if(flagVisibile == true) {
+						messageET.setText(parent.getSelectedItem().toString());
 
-					spino.setVisibility(0);
+						spino.setEnabled(false);
+						spino.setVisibility(0);
+
+					}
+
 				}
 
 				@Override
@@ -257,11 +275,6 @@
 				}
 			});
 
-			ArrayAdapter ad = new ArrayAdapter(this,	android.R.layout.simple_spinner_item,courses);
-			ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			spino.setAdapter(ad);
-			spino.setVisibility(1);
-			spino.setEnabled(false);
 
 
 		   //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -761,9 +774,16 @@
 
 			if(id == R.id.action_lista)
 			{
+
+				List<String> mLines =  readFromFile(getBaseContext());
+				ArrayAdapter ad = new ArrayAdapter(this,	android.R.layout.simple_spinner_item,mLines);
+				spino.setAdapter(ad);
 				spino.setVisibility(1);
-				spino.setEnabled(false);
+				spino.setEnabled(true);
 				spino.performClick();
+
+				flagVisibile= true;
+
 
 				return true;
 			}
@@ -977,6 +997,35 @@
 				e.printStackTrace();
 
 			}
+		}
+
+
+		private ArrayList<String> readFromFile(Context context)  {
+
+			ArrayList<String> ret = new ArrayList<>();
+
+			//java.io.File sdcard = Environment.getExternalStorageDirectory() ;
+			java.io.File sdcard  = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "//CONVERSAZIONI//frasi.txt");
+
+			//java.io.File  file = new java.io.File(sdcard, "conversazioni.txt");
+			StringBuilder text = new StringBuilder();
+
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(sdcard));
+				// InputStream is = this.getResources().openRawResource(R.raw.sample);
+
+				String line;
+
+				while ((line = br.readLine()) != null) {
+					ret.add(line);
+
+				}
+				br.close();
+			} catch (IOException e) {
+				//You'll need to add proper error handling here
+			}
+
+			return ret;
 		}
 	}
 

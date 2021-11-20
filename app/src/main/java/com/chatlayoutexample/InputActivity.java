@@ -50,7 +50,6 @@ public class InputActivity extends AppCompatActivity {
     public void writeToFile(String strNota)
     {
 
-        // Get the directory for the user's public pictures directory.
         java.io.File fileConnectChat = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONVERSAZIONI");
 
         if(!fileConnectChat.exists())
