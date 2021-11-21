@@ -144,6 +144,7 @@
 		private MediaPlayer player;
 		Spinner spino;
 		Boolean flagVisibile;
+		int check=0;
 
 		String[] courses = { "C", "Data structures",
 				"Interview prep", "Algorithms",
@@ -248,24 +249,25 @@
 			spino = findViewById(R.id.spinner);
 			List<String> mLines =  readFromFile(getBaseContext());
 			ArrayAdapter ad = new ArrayAdapter(this,	android.R.layout.simple_spinner_item,mLines);
-
+			ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spino.setAdapter(ad);
 			spino.setVisibility(0);
 			spino.setEnabled(false);
 			spino.setFocusable(false);
 
-
 			spino.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override
 				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-					if(flagVisibile == true) {
+					if(++check > 2) {
 						messageET.setText(parent.getSelectedItem().toString());
 
 						spino.setEnabled(false);
 						spino.setVisibility(0);
 
 					}
+					//if(flagVisibile == true) {
+					//}
 
 				}
 
@@ -708,6 +710,8 @@
 		public boolean onOptionsItemSelected(MenuItem item) {
 			int id = item.getItemId();
 
+			flagVisibile= false;
+
 			if (id == R.id.action_settings) {
 				mId = mIdIntelocutore.getText().toString();
 				String[] IdFolders = mId.split(" ");
@@ -777,13 +781,14 @@
 
 				List<String> mLines =  readFromFile(getBaseContext());
 				ArrayAdapter ad = new ArrayAdapter(this,	android.R.layout.simple_spinner_item,mLines);
+				ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
 				spino.setAdapter(ad);
 				spino.setVisibility(1);
 				spino.setEnabled(true);
 				spino.performClick();
 
-				flagVisibile= true;
-
+				//flagVisibile= true;
 
 				return true;
 			}
