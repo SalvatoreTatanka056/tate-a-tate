@@ -255,6 +255,8 @@
 			spino.setEnabled(false);
 			spino.setFocusable(false);
 
+			//spino.setSelection(-1,false);
+
 			spino.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 				@Override
 				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -264,6 +266,7 @@
 
 						spino.setEnabled(false);
 						spino.setVisibility(0);
+						check=1;
 
 					}
 					//if(flagVisibile == true) {
