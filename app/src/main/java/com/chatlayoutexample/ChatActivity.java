@@ -904,13 +904,13 @@
 			ChatMessage msg = new ChatMessage();
 			msg.setId(1);
 			msg.setMe(false);
-			msg.setMessage("Ciao");
+			msg.setMessage("Benvenuti");
 			msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
 			chatHistory.add(msg);
 			ChatMessage msg1 = new ChatMessage();
 			msg1.setId(2);
 			msg1.setMe(false);
-			msg1.setMessage("Ciao come stai?");
+			msg1.setMessage("Alla Chat Tate-a-Tate");
 			msg1.setDate(DateFormat.getDateTimeInstance().format(new Date()));
 			chatHistory.add(msg1);
 
