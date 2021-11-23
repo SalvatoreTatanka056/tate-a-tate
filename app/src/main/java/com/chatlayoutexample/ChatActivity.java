@@ -251,9 +251,8 @@
 			ArrayAdapter ad = new ArrayAdapter(this,	android.R.layout.simple_spinner_item,mLines);
 			ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spino.setAdapter(ad);
-			spino.setVisibility(0);
+			spino.setVisibility(View.INVISIBLE);
 			spino.setEnabled(false);
-			spino.setFocusable(false);
 
 			//spino.setSelection(-1,false);
 
@@ -264,8 +263,9 @@
 					if(++check > 2) {
 						messageET.setText(parent.getSelectedItem().toString());
 
+
 						spino.setEnabled(false);
-						spino.setVisibility(0);
+						spino.setVisibility(View.INVISIBLE);
 						check=1;
 
 					}
@@ -399,9 +399,6 @@
 
 
 						mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
-
-						/* --- flag per controllare e salvare in vecchio Id creato */
-						/* --- e riconnettere con il vecchio ID se si salva la chat */
 
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ITALY);
 						String time = sdf.format(new Date());
