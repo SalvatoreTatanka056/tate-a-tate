@@ -280,8 +280,6 @@
 				}
 			});
 
-
-
 		   //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		   //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
 
