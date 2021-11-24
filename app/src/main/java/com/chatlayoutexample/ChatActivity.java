@@ -280,7 +280,17 @@
 				}
 			});
 
-		   //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			/*ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+
+
+			if(clipboard.getText().toString().isEmpty()) {
+				ClipData clip = ClipData.newPlainText("ID", "nessun test");
+				clipboard.setPrimaryClip(clip);
+
+			}*/
+
+
+			//locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		   //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
 
 			notificationManager = getSystemService(NotificationManager.class);
