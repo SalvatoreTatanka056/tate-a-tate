@@ -280,14 +280,9 @@
 				}
 			});
 
-			/*ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-
-
-			if(clipboard.getText().toString().isEmpty()) {
-				ClipData clip = ClipData.newPlainText("ID", "nessun test");
-				clipboard.setPrimaryClip(clip);
-
-			}*/
+			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+			ClipData clip = ClipData.newPlainText("ID", "nessun test");
+			clipboard.setPrimaryClip(clip);
 
 
 			//locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
