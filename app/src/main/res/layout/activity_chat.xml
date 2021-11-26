@@ -40,11 +40,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
+
+        <ImageView
+            android:id="@+id/imageViewMain"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/cattura_preview_rev_1"
+            tools:srcCompat="@drawable/cattura_preview_rev_1" />
+
         <ListView
             android:id="@+id/messagesContainer"
             style="@style/Dark"
             android:background="@color/common_google_signin_btn_text_light_focused"
-            android:cacheColorHint="#02FFFFFF" />
+            android:cacheColorHint="#02FFFFFF">
+
+
+        </ListView>
 
         <TextView
             android:id="@+id/meLbl"

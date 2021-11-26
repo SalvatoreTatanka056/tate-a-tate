@@ -34,6 +34,7 @@
 	import android.widget.Button;
 	import android.widget.EditText;
 	import android.widget.ImageButton;
+	import android.widget.ImageView;
 	import android.widget.ListAdapter;
 	import android.widget.ListView;
 	import android.widget.ProgressBar;
@@ -145,6 +146,7 @@
 		Spinner spino;
 		Boolean flagVisibile;
 		int check=0;
+		private ImageView view_tutorial;
 
 		String[] courses = { "C", "Data structures",
 				"Interview prep", "Algorithms",
@@ -194,6 +196,9 @@
 					}
 				}
 			});
+
+			mBtnIncolla.setTooltipText("Incollare Id Inviato dal tuo interlocutore per connetterti la nuovo canale. ");
+
 
 			mBtnPlay = (ImageButton) findViewById(R.id.btnPlay);
 			mBtnPlay.setOnClickListener(new View.OnClickListener() {
@@ -284,6 +289,16 @@
 			ClipData clip = ClipData.newPlainText("ID", "nessun test");
 			clipboard.setPrimaryClip(clip);
 
+
+			view_tutorial = (ImageView) findViewById(R.id.imageViewMain);
+			view_tutorial.setVisibility(View.INVISIBLE);
+
+			/*view_tutorial.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					view_tutorial.setVisibility(View.INVISIBLE);
+				}
+			});*/
 
 			//locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		   //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
@@ -528,7 +543,6 @@
 			super.onResume();
 			mflagAttiva = true;
 		}
-
 
 		private void readFileNULL(String fileId) {
 			mDriveServiceHelper.bflagStartTimer = true;
@@ -1035,5 +1049,7 @@
 
 			return ret;
 		}
+
+
 	}
 
