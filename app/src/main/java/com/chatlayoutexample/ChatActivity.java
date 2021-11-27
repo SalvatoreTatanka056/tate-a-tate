@@ -147,6 +147,7 @@
 		Boolean flagVisibile;
 		int check=0;
 		private ImageView view_tutorial;
+		RelativeLayout mRConteiner;
 
 		String[] courses = { "C", "Data structures",
 				"Interview prep", "Algorithms",
@@ -160,6 +161,7 @@
 		protected void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.activity_chat);
+
 
 			mIdIntelocutore = (EditText) findViewById(R.id.editTextTextMultiLine);
 			mIdIntelocutore.setEnabled(false);
@@ -290,15 +292,9 @@
 			clipboard.setPrimaryClip(clip);
 
 
-			view_tutorial = (ImageView) findViewById(R.id.imageViewMain);
-			view_tutorial.setVisibility(View.INVISIBLE);
 
-			/*view_tutorial.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					view_tutorial.setVisibility(View.INVISIBLE);
-				}
-			});*/
+			view_tutorial = (ImageView) findViewById(R.id.imageViewMain);
+			view_tutorial.setVisibility(View.VISIBLE);
 
 			//locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		   //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
@@ -516,6 +512,7 @@
 				mIDMessagioIniziale = 0;
 				messageET.setEnabled(true);
 				mPrgMain.setVisibility(View.INVISIBLE);
+				view_tutorial.setVisibility(View.INVISIBLE);
 
 			/*	Intent serviceIntent = new Intent(ChatActivity.this, MyServiceChat.class);
 				serviceIntent.putExtra("IDCartelle", mId);
@@ -918,7 +915,7 @@
 
 			chatHistory = new ArrayList<ChatMessage>();
 
-			ChatMessage msg = new ChatMessage();
+			/*ChatMessage msg = new ChatMessage();
 			msg.setId(1);
 			msg.setMe(false);
 			msg.setMessage("Benvenuti");
@@ -929,7 +926,7 @@
 			msg1.setMe(false);
 			msg1.setMessage("Alla Chat Tate-a-Tate");
 			msg1.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-			chatHistory.add(msg1);
+			chatHistory.add(msg1);*/
 
 			adapter = new ChatAdapter(ChatActivity.this, new ArrayList<ChatMessage>());
 			messagesContainer.setAdapter(adapter);
