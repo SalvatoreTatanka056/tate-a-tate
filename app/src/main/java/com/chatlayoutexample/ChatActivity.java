@@ -29,6 +29,7 @@
 	import android.view.Menu;
 	import android.view.MenuItem;
 	import android.view.View;
+	import android.view.animation.AnimationUtils;
 	import android.widget.AdapterView;
 	import android.widget.ArrayAdapter;
 	import android.widget.Button;
@@ -202,6 +203,8 @@
 						mDriveServiceHelper.bflagStartTimer = false;
 						queryCount(IdFolders);
 
+						Toast.makeText(getBaseContext(),"La Chat è iniziare la chat",Toast.LENGTH_LONG);
+
 					}
 				}
 			});
@@ -298,10 +301,10 @@
 			ClipData clip = ClipData.newPlainText("ID", "nessun test");
 			clipboard.setPrimaryClip(clip);
 
-
-
 			view_tutorial = (ImageView) findViewById(R.id.imageViewMain);
 			view_tutorial.setVisibility(View.VISIBLE);
+
+			//view_tutorial.startAnimation(AnimationUtils.loadAnimation(getBaseContext(), R.id.imageViewMain));
 
 			//locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		   //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
@@ -520,6 +523,9 @@
 				messageET.setEnabled(true);
 				mPrgMain.setVisibility(View.INVISIBLE);
 				view_tutorial.setVisibility(View.INVISIBLE);
+
+				messageET.requestFocus();
+
 
 			/*	Intent serviceIntent = new Intent(ChatActivity.this, MyServiceChat.class);
 				serviceIntent.putExtra("IDCartelle", mId);
@@ -919,6 +925,9 @@
 		}
 
 		private void loadDummyHistory() {
+
+
+
 
 			chatHistory = new ArrayList<ChatMessage>();
 
