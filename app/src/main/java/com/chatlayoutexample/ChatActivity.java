@@ -23,6 +23,7 @@
 	import android.os.Handler;
 	import android.os.IBinder;
 	import android.provider.Settings;
+	import android.text.Editable;
 	import android.text.TextUtils;
 	import android.util.Log;
 	import android.view.Gravity;
@@ -191,16 +192,18 @@
 				@Override
 				public void onClick(View view) {
 
-					if (mIdIntelocutore.getText().length() > 0) {
+					ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+
+					if (clipboard.getText().toString().length() > 0) {
 						mIdIntelocutore.setSelectAllOnFocus(true);
 						mIdIntelocutore.requestFocus();
-						ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 						mIdIntelocutore.setText(clipboard.getText().toString());
 
-						mId = mIdIntelocutore.getText().toString();
+						mId = clipboard.getText().toString();
 						String[] IdFolders = mId.split(" ");
 
 						mDriveServiceHelper.bflagStartTimer = false;
+
 						queryCount(IdFolders);
 
 						Toast.makeText(getBaseContext(),"La Chat è iniziare la chat",Toast.LENGTH_LONG);
@@ -208,6 +211,8 @@
 					}
 				}
 			});
+
+
 
 			mBtnIncolla.setTooltipText("Incollare Id Inviato dal tuo interlocutore per connetterti la nuovo canale. ");
 
@@ -298,7 +303,7 @@
 			});
 
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-			ClipData clip = ClipData.newPlainText("ID", "nessun test");
+			ClipData clip = ClipData.newPlainText("ID",  mIdIntelocutore.getText().toString());
 			clipboard.setPrimaryClip(clip);
 
 			view_tutorial = (ImageView) findViewById(R.id.imageViewMain);
@@ -310,6 +315,8 @@
 		   //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 10, this);
 
 			notificationManager = getSystemService(NotificationManager.class);
+			//mBtnIncolla.setEnabled(false);
+
 
 		}
 
@@ -870,7 +877,6 @@
 			}
 		}
 
-
 		private void onGPSLocationChanged(Location location) {
 			if (location != null) {
 				double pLong = location.getLongitude();
@@ -925,9 +931,6 @@
 		}
 
 		private void loadDummyHistory() {
-
-
-
 
 			chatHistory = new ArrayList<ChatMessage>();
 
