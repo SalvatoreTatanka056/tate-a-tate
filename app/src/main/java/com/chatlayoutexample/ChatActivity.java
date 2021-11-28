@@ -195,6 +195,13 @@
 						mIdIntelocutore.requestFocus();
 						ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 						mIdIntelocutore.setText(clipboard.getText().toString());
+
+						mId = mIdIntelocutore.getText().toString();
+						String[] IdFolders = mId.split(" ");
+
+						mDriveServiceHelper.bflagStartTimer = false;
+						queryCount(IdFolders);
+
 					}
 				}
 			});
