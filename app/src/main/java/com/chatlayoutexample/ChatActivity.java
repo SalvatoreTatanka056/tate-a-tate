@@ -199,14 +199,17 @@
 						mIdIntelocutore.requestFocus();
 						mIdIntelocutore.setText(clipboard.getText().toString());
 
+
+
 						mId = clipboard.getText().toString();
 						String[] IdFolders = mId.split(" ");
 
 						mDriveServiceHelper.bflagStartTimer = false;
+						Toast.makeText(getBaseContext(),"La chat puo' iniziare ",Toast.LENGTH_LONG).show();
 
 						queryCount(IdFolders);
 
-						Toast.makeText(getBaseContext(),"La Chat è iniziare la chat",Toast.LENGTH_LONG);
+
 
 					}
 				}
