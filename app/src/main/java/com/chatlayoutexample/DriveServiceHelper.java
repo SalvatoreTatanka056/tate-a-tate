@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.api.client.http.ByteArrayContent;
+import com.google.api.client.http.FileContent;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
@@ -65,6 +66,22 @@ public class DriveServiceHelper {
             return googleFile.getId();
         });
     }
+
+    public String uploadFile(String folderId) throws IOException {
+        File fileMetadata = new File();
+        fileMetadata.setName("music.amr");
+        fileMetadata.setParents(Collections.singletonList(folderId));
+        java.io.File filePath = new java.io.File("/sdcard/Music/");
+        FileContent mediaContent = new FileContent("audio/amr",filePath);
+
+        File file = mDriveService.files().create(fileMetadata, mediaContent)
+                .setFields("id")
+                .execute();
+        System.out.println("File ID: " + file.getId());
+        return file.getId();
+    }
+
+
 
 
     public Task<String> createFileConnect(String NomeFile,String Message,String FolderId) {

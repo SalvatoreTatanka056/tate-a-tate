@@ -16,9 +16,11 @@
 	import android.content.ServiceConnection;
 	import android.content.pm.PackageManager;
 	import android.graphics.Rect;
+	import android.graphics.drawable.Drawable;
 	import android.location.Location;
 	import android.location.LocationListener;
 	import android.location.LocationManager;
+	import android.media.AudioRecord;
 	import android.media.MediaPlayer;
 	import android.media.MediaRecorder;
 	import android.net.Uri;
@@ -58,6 +60,7 @@
 	import com.google.android.gms.common.api.Scope;
 	import com.google.api.client.extensions.android.http.AndroidHttp;
 	import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+	import com.google.api.client.http.FileContent;
 	import com.google.api.client.json.gson.GsonFactory;
 	import com.google.api.services.drive.Drive;
 	import com.google.api.services.drive.DriveScopes;
@@ -162,6 +165,8 @@
 		Boolean FlagAudioStart =true;
 		MediaRecorder recorder;
 
+
+
 		private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 		private boolean permissionToRecordAccepted = false;
 		private String [] permissions = {Manifest.permission.RECORD_AUDIO};
@@ -187,17 +192,30 @@
 				@Override
 				public void onClick(View v) {
 
-				/*	if(FlagAudioStart ) {
+					if(FlagAudioStart ) {
 						try {
+							sendAudioMessage.setBackgroundResource(android.R.drawable.ic_lock_silent_mode_off);
+							mPrgMain.setVisibility(View.VISIBLE);
 							startRecord();
+							//sendAudioMessage.;
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}
 					else
 					{
+						sendAudioMessage.setBackgroundResource(android.R.drawable.ic_btn_speak_now);
+						mPrgMain.setVisibility(View.INVISIBLE);
 						stopRecord();
-					}*/
+
+						/*String[] IdFolders = mId.split(" ");
+						try {
+							String ss =mDriveServiceHelper.uploadFile(IdFolders[1]);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}*/
+
+					}
 
 					FlagAudioStart = !FlagAudioStart;
 				}
@@ -364,7 +382,7 @@
 			recorder.setAudioSource(MediaRecorder.AudioSource.MIC);  //ok so I say audio source is the microphone, is it windows/linux microphone on the emulator?
 			recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-			recorder.setOutputFile("/sdcard/Music/"+System.currentTimeMillis()+".amr");
+			recorder.setOutputFile("/sdcard/Music/music.amr");
 			recorder.prepare();
 			recorder.start();
 		}

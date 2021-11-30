@@ -178,7 +178,8 @@
             android:layout_marginEnd="60dp"
             android:layout_marginRight="60dp"
             android:layout_marginBottom="13dp"
-            android:background="@android:drawable/ic_btn_speak_now" />
+            android:background="@android:drawable/ic_btn_speak_now"
+            tools:ignore="SpeakableTextPresentCheck" />
 
 
     </RelativeLayout>
