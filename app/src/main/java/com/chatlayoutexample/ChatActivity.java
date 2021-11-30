@@ -210,6 +210,8 @@
 
 						mDriveServiceHelper.uploadFile();
 
+						messageET.setText(mDriveServiceHelper.mLinkAudio);
+
 					}
 
 					FlagAudioStart = !FlagAudioStart;

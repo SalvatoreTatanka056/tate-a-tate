@@ -38,6 +38,7 @@ public class DriveServiceHelper {
     private String mIdFolderCurrentConnect;
     public String mGlobalIdFolder;
     public boolean bflagStartTimer=true;
+    public String mLinkAudio;
 
 
     public DriveServiceHelper(Drive driveService) {
@@ -78,8 +79,11 @@ public class DriveServiceHelper {
 
             File file = mDriveService.files().create(fileMetadata, mediaContent).setFields("id").execute();
 
+            mLinkAudio= String.format("https://drive.google.com/file/d/%s/view?usp=sharing",file.getId());
 
             return file.getId();
+
+
         });
     }
 
