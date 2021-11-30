@@ -22,6 +22,7 @@
 	import android.media.MediaPlayer;
 	import android.media.MediaRecorder;
 	import android.net.Uri;
+	import android.os.Build;
 	import android.os.Bundle;
 	import android.os.Environment;
 
@@ -164,44 +165,29 @@
 		private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 		private boolean permissionToRecordAccepted = false;
 		private String [] permissions = {Manifest.permission.RECORD_AUDIO};
-
-
-		String[] courses = { "C", "Data structures",
-				"Interview prep", "Algorithms",
-				"DSA with java", "OS" };
-
+		private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 29;
 
 		private Timer myTimer;
 		private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
-
-		@Override
-		public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-			super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-			switch (requestCode){
-				case REQUEST_RECORD_AUDIO_PERMISSION:
-					permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-					break;
-			}
-			if (!permissionToRecordAccepted ) finish();
-
-		}
-
 
 		@Override
 		protected void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.activity_chat);
 
-			//ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+			if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+					!= PackageManager.PERMISSION_GRANTED) {
 
+				ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},
+						10);
+			}
 
-			/*sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
+			sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
 			sendAudioMessage.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 
-
-					if(FlagAudioStart ) {
+				/*	if(FlagAudioStart ) {
 						try {
 							startRecord();
 						} catch (IOException e) {
@@ -211,11 +197,11 @@
 					else
 					{
 						stopRecord();
-					}
+					}*/
 
 					FlagAudioStart = !FlagAudioStart;
 				}
-			});*/
+			});
 
 			mIdIntelocutore = (EditText) findViewById(R.id.editTextTextMultiLine);
 			mIdIntelocutore.setEnabled(false);
@@ -251,8 +237,6 @@
 						mIdIntelocutore.requestFocus();
 						mIdIntelocutore.setText(clipboard.getText().toString());
 
-
-
 						mId = clipboard.getText().toString();
 						String[] IdFolders = mId.split(" ");
 
@@ -260,14 +244,9 @@
 						Toast.makeText(getBaseContext(),"La chat puo' iniziare ",Toast.LENGTH_LONG).show();
 
 						queryCount(IdFolders);
-
-
-
 					}
 				}
 			});
-
-
 
 			mBtnIncolla.setTooltipText("Incollare Id Inviato dal tuo interlocutore per connetterti la nuovo canale. ");
 
@@ -381,6 +360,7 @@
 
 		private void startRecord() throws IllegalStateException, IOException{
 			recorder = new MediaRecorder();
+			recorder.reset();
 			recorder.setAudioSource(MediaRecorder.AudioSource.MIC);  //ok so I say audio source is the microphone, is it windows/linux microphone on the emulator?
 			recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
