@@ -67,22 +67,21 @@ public class DriveServiceHelper {
         });
     }
 
-    public String uploadFile(String folderId) throws IOException {
-        File fileMetadata = new File();
-        fileMetadata.setName("music.amr");
-        fileMetadata.setParents(Collections.singletonList(folderId));
-        java.io.File filePath = new java.io.File("/sdcard/Music/");
-        FileContent mediaContent = new FileContent("audio/amr",filePath);
+    public Task<String>  uploadFile() {
+        return Tasks.call(mExecutor, () -> {
+            File fileMetadata = new File()
+                    .setMimeType("audio/amr")
+                    .setName("music.amr");
 
-        File file = mDriveService.files().create(fileMetadata, mediaContent)
-                .setFields("id")
-                .execute();
-        System.out.println("File ID: " + file.getId());
-        return file.getId();
+            java.io.File filePath = new java.io.File("/sdcard/Music/music.amr");
+            FileContent mediaContent = new FileContent("audio/amr",filePath);
+
+            File file = mDriveService.files().create(fileMetadata, mediaContent).setFields("id").execute();
+
+
+            return file.getId();
+        });
     }
-
-
-
 
     public Task<String> createFileConnect(String NomeFile,String Message,String FolderId) {
         return Tasks.call(mExecutor, () -> {

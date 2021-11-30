@@ -208,12 +208,7 @@
 						mPrgMain.setVisibility(View.INVISIBLE);
 						stopRecord();
 
-						/*String[] IdFolders = mId.split(" ");
-						try {
-							String ss =mDriveServiceHelper.uploadFile(IdFolders[1]);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}*/
+						mDriveServiceHelper.uploadFile();
 
 					}
 
