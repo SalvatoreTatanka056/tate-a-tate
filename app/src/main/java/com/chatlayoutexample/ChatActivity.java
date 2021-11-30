@@ -1,5 +1,6 @@
 	package com.chatlayoutexample;
 
+	import android.Manifest;
 	import android.app.Activity;
 	import android.app.AlertDialog;
 	import android.app.NotificationChannel;
@@ -7,21 +8,26 @@
 	import android.content.ClipData;
 	import android.content.ClipboardManager;
 	import android.content.ComponentName;
+	import android.content.ContentResolver;
+	import android.content.ContentValues;
 	import android.content.Context;
 	import android.content.DialogInterface;
 	import android.content.Intent;
 	import android.content.ServiceConnection;
+	import android.content.pm.PackageManager;
 	import android.graphics.Rect;
 	import android.location.Location;
 	import android.location.LocationListener;
 	import android.location.LocationManager;
 	import android.media.MediaPlayer;
+	import android.media.MediaRecorder;
 	import android.net.Uri;
 	import android.os.Bundle;
 	import android.os.Environment;
 
 	import android.os.Handler;
 	import android.os.IBinder;
+	import android.provider.MediaStore;
 	import android.provider.Settings;
 	import android.text.Editable;
 	import android.text.TextUtils;
@@ -58,6 +64,7 @@
 
 	import androidx.annotation.NonNull;
 	import androidx.appcompat.app.AppCompatActivity;
+	import androidx.core.app.ActivityCompat;
 	import androidx.core.app.NotificationCompat;
 
 
@@ -150,6 +157,14 @@
 		int check=0;
 		private ImageView view_tutorial;
 		RelativeLayout mRConteiner;
+		Button sendAudioMessage;
+		Boolean FlagAudioStart =true;
+		MediaRecorder recorder;
+
+		private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+		private boolean permissionToRecordAccepted = false;
+		private String [] permissions = {Manifest.permission.RECORD_AUDIO};
+
 
 		String[] courses = { "C", "Data structures",
 				"Interview prep", "Algorithms",
@@ -160,10 +175,47 @@
 		private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
 
 		@Override
+		public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+			super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+			switch (requestCode){
+				case REQUEST_RECORD_AUDIO_PERMISSION:
+					permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+					break;
+			}
+			if (!permissionToRecordAccepted ) finish();
+
+		}
+
+
+		@Override
 		protected void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.activity_chat);
 
+			//ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+
+
+			/*sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
+			sendAudioMessage.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+
+
+					if(FlagAudioStart ) {
+						try {
+							startRecord();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					else
+					{
+						stopRecord();
+					}
+
+					FlagAudioStart = !FlagAudioStart;
+				}
+			});*/
 
 			mIdIntelocutore = (EditText) findViewById(R.id.editTextTextMultiLine);
 			mIdIntelocutore.setEnabled(false);
@@ -323,7 +375,41 @@
 
 		}
 
+
 		Handler handler;
+
+
+		private void startRecord() throws IllegalStateException, IOException{
+			recorder = new MediaRecorder();
+			recorder.setAudioSource(MediaRecorder.AudioSource.MIC);  //ok so I say audio source is the microphone, is it windows/linux microphone on the emulator?
+			recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+			recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+			recorder.setOutputFile("/sdcard/Music/"+System.currentTimeMillis()+".amr");
+			recorder.prepare();
+			recorder.start();
+		}
+
+		private void stopRecord(){
+			recorder.stop();
+			recorder.release();
+		}
+		protected void addRecordingToMediaLibrary() {
+			//creating content values of size 4
+			ContentValues values = new ContentValues(4);
+			long current = System.currentTimeMillis();
+			values.put(MediaStore.Audio.Media.DATE_ADDED, (int) (current / 1000));
+			values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/3gpp");
+
+			//creating content resolver and storing it in the external content uri
+			ContentResolver contentResolver = getContentResolver();
+			Uri base = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+			Uri newUri = contentResolver.insert(base, values);
+
+			//sending broadcast message to scan the media file so that it can be available
+			sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri));
+			Toast.makeText(this, "Added File " + newUri, Toast.LENGTH_LONG).show();
+		}
+
 
 		private static boolean showCheatSheet(View view, CharSequence text) {
 			if (TextUtils.isEmpty(text)) {
