@@ -1,6 +1,10 @@
 	package com.chatlayoutexample;
 
 	import android.Manifest;
+	import android.animation.Animator;
+	import android.animation.AnimatorListenerAdapter;
+	import android.animation.AnimatorSet;
+	import android.animation.ObjectAnimator;
 	import android.app.Activity;
 	import android.app.AlertDialog;
 	import android.app.NotificationChannel;
@@ -167,8 +171,7 @@
 		Button sendAudioMessage;
 		Boolean FlagAudioStart =true;
 		MediaRecorder recorder;
-
-
+		AnimatorSet mAnimationSet;
 
 		private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 		private boolean permissionToRecordAccepted = false;
@@ -198,9 +201,26 @@
 					if(FlagAudioStart ) {
 						try {
 							sendAudioMessage.setBackgroundResource(android.R.drawable.ic_lock_silent_mode_off);
-							mPrgMain.setVisibility(View.VISIBLE);
+						   //	mPrgMain.setVisibility(View.VISIBLE);
 							startRecord();
 
+							ObjectAnimator fadeOut = ObjectAnimator.ofFloat(sendAudioMessage, "alpha",  1f, .3f);
+							fadeOut.setDuration(1000);
+							ObjectAnimator fadeIn = ObjectAnimator.ofFloat(sendAudioMessage, "alpha", .3f, 1f);
+							fadeIn.setDuration(1000);
+
+							mAnimationSet = new AnimatorSet();
+
+							mAnimationSet.play(fadeIn).after(fadeOut);
+
+							mAnimationSet.addListener(new AnimatorListenerAdapter() {
+								@Override
+								public void onAnimationEnd(Animator animation) {
+									super.onAnimationEnd(animation);
+									mAnimationSet.start();
+								}
+							});
+							mAnimationSet.start();
 
 							Thread.sleep(1000);
 							//sendAudioMessage.;
@@ -213,8 +233,13 @@
 
 						mDriveServiceHelper.mLinkAudio="";
 
+						mAnimationSet.removeAllListeners();
+						mAnimationSet.end();
+						mAnimationSet.cancel();
+						mAnimationSet = null;
+						
 						sendAudioMessage.setBackgroundResource(android.R.drawable.ic_btn_speak_now);
-						mPrgMain.setVisibility(View.INVISIBLE);
+						//mPrgMain.setVisibility(View.INVISIBLE);
 						stopRecord();
 
 						final Task<String> stringTask = mDriveServiceHelper.uploadFile();
@@ -418,9 +443,7 @@
 
 		}
 
-
 		Handler handler;
-
 
 		private void startRecord() throws IllegalStateException, IOException{
 			recorder = new MediaRecorder();
