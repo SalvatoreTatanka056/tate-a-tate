@@ -20,6 +20,7 @@
 	import android.location.Location;
 	import android.location.LocationListener;
 	import android.location.LocationManager;
+	import android.media.AudioAttributes;
 	import android.media.AudioRecord;
 	import android.media.MediaPlayer;
 	import android.media.MediaRecorder;
@@ -320,6 +321,33 @@
 					ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 					ClipData clip = ClipData.newPlainText("ID", data.getMessage().toString());
 					clipboard.setPrimaryClip(clip);
+
+					if(data.getMessage().toString().contains("https://drive.google.com/file/d/"))
+					{
+						mDriveServiceHelper.DownloadFileFromGoogleDrive(mDriveServiceHelper.mIdFileAudio,"/sdcard/Music/");
+						Toast.makeText(getBaseContext(), "Download Completato.", Toast.LENGTH_SHORT).show();
+
+						Uri myUri = Uri.parse("sdcard/Music/music.amr"); // your URL here
+						MediaPlayer mediaPlayer = new MediaPlayer();
+						mediaPlayer.setAudioAttributes(
+								new AudioAttributes.Builder()
+										.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+										.setUsage(AudioAttributes.USAGE_MEDIA)
+										.build()
+						);
+						try {
+							mediaPlayer.setDataSource(getApplicationContext(), myUri);
+							//mediaPlayer.setDataSource(url);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						try {
+							mediaPlayer.prepare(); // might take long! (for buffering, etc)
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						mediaPlayer.start();
+					}
 
 					Toast.makeText(getBaseContext(), data.getMessage(), Toast.LENGTH_SHORT).show();
 				}
