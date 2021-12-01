@@ -17,9 +17,11 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.Callable;
@@ -39,6 +41,7 @@ public class DriveServiceHelper {
     public String mGlobalIdFolder;
     public boolean bflagStartTimer=true;
     public String mLinkAudio;
+    public String mIdFileAudio;
 
 
     public DriveServiceHelper(Drive driveService) {
@@ -63,7 +66,6 @@ public class DriveServiceHelper {
             mIdFileCurrent = googleFile.getId();
             saveFile(NomeFile,Message,mIdFileCurrent);
 
-
             return googleFile.getId();
         });
     }
@@ -80,11 +82,24 @@ public class DriveServiceHelper {
             File file = mDriveService.files().create(fileMetadata, mediaContent).setFields("id").execute();
 
             mLinkAudio= String.format("https://drive.google.com/file/d/%s/view?usp=sharing",file.getId());
+            //mLinkAudio= String.format("drive.google.com/uc?export=download&id=%s",file.getId());
+            mIdFileAudio = file.getId();
 
             return file.getId();
-
-
         });
+    }
+
+
+    boolean DownloadFileFromGoogleDrive(String sFileId, String sDestinationPath) {
+        try {
+            OutputStream oOutputStream = new FileOutputStream(sDestinationPath);
+            mDriveService.files().get(sFileId).executeMediaAndDownloadTo(oOutputStream);
+            oOutputStream.flush();
+            oOutputStream.close();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public Task<String> createFileConnect(String NomeFile,String Message,String FolderId) {
@@ -135,7 +150,7 @@ public class DriveServiceHelper {
 
             if(Tipo.compareToIgnoreCase("C")==0)
             {
-                mGlobalIdFolder= googleFile.getId();
+                mGlobalIdFolder = googleFile.getId();
             }
 
             return googleFile.getId();

@@ -58,6 +58,8 @@
 	import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 	import com.google.android.gms.common.api.GoogleApiClient;
 	import com.google.android.gms.common.api.Scope;
+	import com.google.android.gms.tasks.OnCompleteListener;
+	import com.google.android.gms.tasks.Task;
 	import com.google.api.client.extensions.android.http.AndroidHttp;
 	import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 	import com.google.api.client.http.FileContent;
@@ -197,21 +199,40 @@
 							sendAudioMessage.setBackgroundResource(android.R.drawable.ic_lock_silent_mode_off);
 							mPrgMain.setVisibility(View.VISIBLE);
 							startRecord();
+
+
+							Thread.sleep(1000);
 							//sendAudioMessage.;
-						} catch (IOException e) {
+						} catch (IOException | InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
 					else
 					{
+
+						mDriveServiceHelper.mLinkAudio="";
+
 						sendAudioMessage.setBackgroundResource(android.R.drawable.ic_btn_speak_now);
 						mPrgMain.setVisibility(View.INVISIBLE);
 						stopRecord();
 
-						mDriveServiceHelper.uploadFile();
+						final Task<String> stringTask = mDriveServiceHelper.uploadFile();
 
-						messageET.setText(mDriveServiceHelper.mLinkAudio);
+						stringTask.addOnCompleteListener(new OnCompleteListener<String>() {
+							@Override
+							public void onComplete(@NonNull Task<String> task) {
+								messageET.setText(mDriveServiceHelper.mLinkAudio);
+							}
+						});
 
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+						//while(mDriveServiceHelper.mLinkAudio.compareTo("") == 0)
+						//	messageET.setText(mDriveServiceHelper.mLinkAudio);
 					}
 
 					FlagAudioStart = !FlagAudioStart;
