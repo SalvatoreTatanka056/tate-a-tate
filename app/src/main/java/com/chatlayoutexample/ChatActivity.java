@@ -237,7 +237,7 @@
 						mAnimationSet.end();
 						mAnimationSet.cancel();
 						mAnimationSet = null;
-						
+
 						sendAudioMessage.setBackgroundResource(android.R.drawable.ic_btn_speak_now);
 						//mPrgMain.setVisibility(View.INVISIBLE);
 						stopRecord();
@@ -248,6 +248,7 @@
 							@Override
 							public void onComplete(@NonNull Task<String> task) {
 								messageET.setText(mDriveServiceHelper.mLinkAudio);
+
 							}
 						});
 
@@ -257,8 +258,6 @@
 							e.printStackTrace();
 						}
 
-						//while(mDriveServiceHelper.mLinkAudio.compareTo("") == 0)
-						//	messageET.setText(mDriveServiceHelper.mLinkAudio);
 					}
 
 					FlagAudioStart = !FlagAudioStart;
@@ -375,6 +374,8 @@
 					}
 
 					Toast.makeText(getBaseContext(), data.getMessage(), Toast.LENGTH_SHORT).show();
+
+					DeleteFile(mDriveServiceHelper.mIdFileAudio);
 				}
 			});
 
@@ -476,7 +477,6 @@
 			sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri));
 			Toast.makeText(this, "Added File " + newUri, Toast.LENGTH_LONG).show();
 		}
-
 
 		private static boolean showCheatSheet(View view, CharSequence text) {
 			if (TextUtils.isEmpty(text)) {
