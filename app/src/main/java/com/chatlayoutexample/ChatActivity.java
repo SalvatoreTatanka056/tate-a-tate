@@ -32,7 +32,6 @@
 	import android.os.Build;
 	import android.os.Bundle;
 	import android.os.Environment;
-
 	import android.os.Handler;
 	import android.os.IBinder;
 	import android.provider.MediaStore;
@@ -57,7 +56,6 @@
 	import android.widget.RelativeLayout;
 	import android.widget.Spinner;
 	import android.widget.Toast;
-
 	import com.google.android.gms.auth.api.signin.GoogleSignIn;
 	import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 	import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -72,15 +70,11 @@
 	import com.google.api.services.drive.Drive;
 	import com.google.api.services.drive.DriveScopes;
 	import com.google.api.services.drive.model.File;
-
 	import androidx.annotation.NonNull;
 	import androidx.appcompat.app.AppCompatActivity;
 	import androidx.core.app.ActivityCompat;
 	import androidx.core.app.NotificationCompat;
-
-
 	import org.apache.commons.codec.binary.Base64;
-
 	import java.io.BufferedReader;
 	import java.io.FileInputStream;
 	import java.io.FileOutputStream;
@@ -104,16 +98,13 @@
 	import java.util.Locale;
 	import java.util.Timer;
 	import java.util.TimerTask;
-
 	import javax.crypto.BadPaddingException;
 	import javax.crypto.Cipher;
 	import javax.crypto.IllegalBlockSizeException;
 	import javax.crypto.NoSuchPaddingException;
 	import javax.crypto.SecretKey;
 	import javax.crypto.spec.SecretKeySpec;
-
 	import se.simbio.encryption.Encryption;
-
 
 	public class ChatActivity extends AppCompatActivity implements LocationListener {
 
@@ -121,7 +112,6 @@
 		//private static String password = "Majabella@56";
 		static  byte[]  key = "!@#$!@#$%^&**&^%".getBytes();
 		final static String algorithm="AES";
-
 		private GoogleApiClient mGoogleApiClient;
 		private Location mLastLocation;
 		private EditText messageET;
@@ -158,20 +148,20 @@
 		private static final int MIN_DIST = 20;
 		private static final int MIN_PERIOD = 30000;
 		private String mIndirizzo;
-		double destLat, destLong;
+		private double destLat, destLong;
 		private Encryption encryption = Encryption.getDefault("Key", "Salt", new byte[16]);
-		NotificationManager notificationManager ;
+		private NotificationManager notificationManager ;
 		private boolean mflagAttiva = true;
 		private MediaPlayer player;
-		Spinner spino;
-		Boolean flagVisibile;
-		int check=0;
+		private Spinner spino;
+		private Boolean flagVisibile;
+		private int check=0;
 		private ImageView view_tutorial;
-		RelativeLayout mRConteiner;
-		Button sendAudioMessage;
-		Boolean FlagAudioStart =true;
-		MediaRecorder recorder;
-		AnimatorSet mAnimationSet;
+		private RelativeLayout mRConteiner;
+		private Button sendAudioMessage;
+		private Boolean FlagAudioStart =true;
+		private MediaRecorder recorder;
+		private AnimatorSet mAnimationSet;
 
 		private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 		private boolean permissionToRecordAccepted = false;
@@ -248,7 +238,7 @@
 							@Override
 							public void onComplete(@NonNull Task<String> task) {
 								messageET.setText(mDriveServiceHelper.mLinkAudio);
-
+								sendBtn.callOnClick();
 							}
 						});
 
@@ -406,10 +396,9 @@
 				@Override
 				public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-					if(++check > 2) {
+					if(++check > 2)
+					{
 						messageET.setText(parent.getSelectedItem().toString());
-
-
 						spino.setEnabled(false);
 						spino.setVisibility(View.INVISIBLE);
 						check=1;
@@ -1069,6 +1058,12 @@
 					messageET.setText("");
 
 					displayMessage(chatMessage);
+
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			});
 

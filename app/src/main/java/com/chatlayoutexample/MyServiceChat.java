@@ -14,7 +14,6 @@ import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
-
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -49,12 +48,8 @@ public class MyServiceChat extends Service {
         IDCartelle = (String) extras.get("IDCartelle");
 
         player = MediaPlayer.create( this, R.raw.radarblip);
-
         player.setLooping( true );
-
         player.start();
-
-
         return START_STICKY;
     }
 
@@ -66,26 +61,17 @@ public class MyServiceChat extends Service {
                         .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
                         .build();
         GoogleSignInClient client = GoogleSignIn.getClient(this, signInOptions);
-
-
-
-
     }
 
 
     @Override
-
-    // execution of the service will
-    // stop on calling this method
     public void onDestroy() {
         super.onDestroy();
-
-
-        // stopping the process
-
     }
+
     @Override
-    public void onTaskRemoved(Intent rootIntent){
+    public void onTaskRemoved(Intent rootIntent)
+    {
 
 
         /*Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());

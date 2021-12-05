@@ -35,11 +35,9 @@ public class InputActivity extends AppCompatActivity {
         send.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                if(!txtNote.getText().toString().trim().isEmpty()) {
-                    //DUMMY
-
+                if(!txtNote.getText().toString().trim().isEmpty())
+                {
                     writeToFile(txtNote.getText().toString());
-
                     finish();
                 }
 

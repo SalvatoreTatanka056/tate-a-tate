@@ -28,10 +28,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-/**
- * A utility for performing read/write operations on Drive files via the REST API and opening a
- * file picker UI via Storage Access Framework.
- */
+
 public class DriveServiceHelper {
     private final Executor mExecutor = Executors.newSingleThreadExecutor();
     private final Drive mDriveService;

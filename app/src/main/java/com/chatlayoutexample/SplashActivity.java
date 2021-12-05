@@ -14,9 +14,7 @@ import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
-/**
- * Created by AbhiAndroid
- */
+
 
 public class SplashActivity extends Activity {
 
@@ -27,9 +25,6 @@ public class SplashActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splashfile);
-
-
-        //view_tutorial.startAnimation(AnimationUtils.loadAnimation(getBaseContext(), R.id.imageViewMain));
 
         view_splash = (ImageView) findViewById(R.id.logo_id);
 
@@ -69,10 +64,5 @@ public class SplashActivity extends Activity {
         //Intent intent = new Intent(SplashActivity.this, tateatateService.class);
         //startService(intent);
 
-
-
     }
-
-
-
 }

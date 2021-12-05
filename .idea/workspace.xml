@@ -34,7 +34,12 @@
       <change beforePath="$PROJECT_DIR$/.gradle/configuration-cache/9qsu3hipfnrequ99dwcvj3jbt/fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/configuration-cache/9qsu3hipfnrequ99dwcvj3jbt/fingerprint.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/configuration-cache/9qsu3hipfnrequ99dwcvj3jbt/state.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/configuration-cache/9qsu3hipfnrequ99dwcvj3jbt/state.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/ChatActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/ChatActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/DriveServiceHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/DriveServiceHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/InputActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/InputActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/MyServiceChat.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/MyServiceChat.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/SplashActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/chatlayoutexample/SplashActivity.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,6 +119,8 @@
     <property name="android-custom-viewC:/Users/salvatore.romano/AppData/Local/Android/Sdk/sources/android-30/android/view/View.java_View_DIMENSIONS" value="1080&#10;1920" />
     <property name="android-custom-viewC:/Users/salvatore.romano/AppData/Local/Android/Sdk/sources/android-30/android/widget/AdapterView.java_AdapterView_DIMENSIONS" value="1080&#10;1920" />
     <property name="android-custom-viewC:/Users/salvatore.romano/AppData/Local/Android/Sdk/sources/android-30/android/widget/AdapterView.java_SELECTED" value="AdapterView" />
+    <property name="android-custom-viewC:/Users/salvatore.romano/AppData/Local/Android/Sdk/sources/android-30/android/widget/RelativeLayout.java_RelativeLayout_DIMENSIONS" value="1080&#10;1920" />
+    <property name="android-custom-viewC:/Users/salvatore.romano/AppData/Local/Android/Sdk/sources/android-30/android/widget/RelativeLayout.java_SELECTED" value="RelativeLayout" />
     <property name="android-custom-viewC:/Users/salvatore.romano/AppData/Local/Android/Sdk/sources/android-30/android/widget/TextView.java_SELECTED" value="TextView" />
     <property name="android-custom-viewC:/Users/salvatore.romano/AppData/Local/Android/Sdk/sources/android-30/android/widget/TextView.java_TextView_DIMENSIONS" value="1080&#10;1920" />
     <property name="android.recentlyUsedThemes" value="Theme.AppCompat.DayNight.DarkActionBar&#10;Theme.AppCompat.Light.DialogWhenLarge&#10;Base.V14.Theme.MaterialComponents.Bridge&#10;Dexter.Internal.Theme.Transparent&#10;Theme.MaterialComponents.NoActionBar.Bridge" />
@@ -130,6 +137,16 @@
       <recent name="C:\Users\salvatore.romano\OneDrive\Documenti\Src\android\ChatLayoutExample\ChatLayoutExample\app\src\main\res\mipmap-xxhdpi" />
       <recent name="C:\Users\salvatore.romano\OneDrive\Documenti\src\android\ChatLayoutExample\ChatLayoutExample\app\src\main\res\raw" />
     </key>
+  </component>
+  <component name="RunAnythingCache">
+    <myKeys>
+      <visibility group="Gradle tasks" flag="true" />
+      <visibility group="Recent projects" flag="true" />
+      <visibility group="Run configurations" flag="true" />
+      <visibility group="com.intellij.ide.actions.runAnything.RunAnythingRunConfigurationProvider" flag="false" />
+      <visibility group="com.intellij.ide.actions.runAnything.activity.RunAnythingRecentProjectProvider" flag="false" />
+      <visibility group="org.jetbrains.plugins.gradle.execution.GradleRunAnythingProvider" flag="false" />
+    </myKeys>
   </component>
   <component name="RunManager">
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
