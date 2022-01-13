@@ -42,6 +42,7 @@
 	import android.view.Gravity;
 	import android.view.Menu;
 	import android.view.MenuItem;
+	import android.view.MotionEvent;
 	import android.view.View;
 	import android.view.animation.AnimationUtils;
 	import android.widget.AdapterView;
@@ -183,7 +184,87 @@
 						10);
 			}
 
-			sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
+		/*	sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
+			sendAudioMessage.setOnTouchListener(new View.OnTouchListener() {
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+
+
+					return false;
+
+				}
+			});*/
+		sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
+		sendAudioMessage.setOnTouchListener(new View.OnTouchListener() {
+				@Override
+				public boolean onTouch(View v, MotionEvent event) {
+
+					switch (event.getAction()) {
+						case MotionEvent.ACTION_DOWN:
+							try {
+								sendAudioMessage.setBackgroundResource(android.R.drawable.ic_lock_silent_mode_off);
+								//	mPrgMain.setVisibility(View.VISIBLE);
+								startRecord();
+
+								ObjectAnimator fadeOut = ObjectAnimator.ofFloat(sendAudioMessage, "alpha", 1f, .3f);
+								fadeOut.setDuration(1000);
+								ObjectAnimator fadeIn = ObjectAnimator.ofFloat(sendAudioMessage, "alpha", .3f, 1f);
+								fadeIn.setDuration(1000);
+
+								mAnimationSet = new AnimatorSet();
+
+								mAnimationSet.play(fadeIn).after(fadeOut);
+
+								mAnimationSet.addListener(new AnimatorListenerAdapter() {
+									@Override
+									public void onAnimationEnd(Animator animation) {
+										super.onAnimationEnd(animation);
+										mAnimationSet.start();
+									}
+								});
+								mAnimationSet.start();
+
+								Thread.sleep(1000);
+								//sendAudioMessage.;
+							} catch (IOException | InterruptedException e) {
+								e.printStackTrace();
+							}
+							break;
+						case MotionEvent.ACTION_UP:
+
+							mDriveServiceHelper.mLinkAudio = "";
+							mAnimationSet.removeAllListeners();
+							mAnimationSet.end();
+							mAnimationSet.cancel();
+							mAnimationSet = null;
+
+							sendAudioMessage.setBackgroundResource(android.R.drawable.ic_btn_speak_now);
+							//mPrgMain.setVisibility(View.INVISIBLE);
+							stopRecord();
+
+							final Task<String> stringTask = mDriveServiceHelper.uploadFile();
+
+							stringTask.addOnCompleteListener(new OnCompleteListener<String>() {
+								@Override
+								public void onComplete(@NonNull Task<String> task) {
+									messageET.setText(mDriveServiceHelper.mLinkAudio);
+									sendBtn.callOnClick();
+								}
+							});
+
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							break;
+					}
+					return true;
+				}
+		    });
+
+
+		/*	sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
 			sendAudioMessage.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -252,7 +333,7 @@
 
 					FlagAudioStart = !FlagAudioStart;
 				}
-			});
+			});*/
 
 			mIdIntelocutore = (EditText) findViewById(R.id.editTextTextMultiLine);
 			mIdIntelocutore.setEnabled(false);
