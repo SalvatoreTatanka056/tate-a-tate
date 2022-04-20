@@ -194,6 +194,7 @@
 
 				}
 			});*/
+
 		sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
 		sendAudioMessage.setOnTouchListener(new View.OnTouchListener() {
 				@Override
@@ -262,7 +263,6 @@
 					return true;
 				}
 		    });
-
 
 		/*	sendAudioMessage = (Button) findViewById(R.id.chatAudioButton);
 			sendAudioMessage.setOnClickListener(new View.OnClickListener() {
