@@ -1,9 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">tate-a-tate</string>
+    <string name="app_name">Tête-à-Tête</string>
+    <string name="app_tagline">Chat P2P privata via Google Drive</string>
+    <string name="title_activity_chat">Tête-à-Tête Chat</string>
+    <string name="splash_screen">Tête-à-Tête</string>
+    <string name="action_settings">Connetti Stanza</string>
+    <string name="action_refresh">Aggiorna</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_chat">tate-a-tate</string>
-    <string name="splash_screen">tate-a-tate</string>
-    <string name="todo">TODO</string>
+    <!-- Chat Screen Strings -->
+    <string name="room_title">Stanza di Conversazione</string>
+    <string name="room_id_hint">Incolla qui l\'ID della stanza dell\'interlocutore</string>
+    <string name="btn_copy_id">Copia ID</string>
+    <string name="btn_paste_id">Incolla ID</string>
+    <string name="btn_connect">Connetti</string>
+    <string name="type_message_hint">Scrivi un messaggio…</string>
+    <string name="send">Invia</string>
+    <string name="empty_chat_title">Nessun messaggio ancora</string>
+    <string name="empty_chat_subtitle">Condividi il tuo ID con il contatto o incolla il suo ID per iniziare a chattare in modo privato.</string>
+
+    <!-- Status Strings -->
+    <string name="status_ready">Pronto</string>
+    <string name="status_connected">Connesso alla stanza</string>
+    <string name="status_connecting">Inizializzazione Drive…</string>
+    <string name="status_syncing">Sincronizzazione messaggi…</string>
+    <string name="toast_id_copied">ID stanza copiato negli appunti!</string>
+    <string name="toast_id_pasted">ID stanza incollato dagli appunti.</string>
+    <string name="toast_connecting">Connessione alla stanza in corso…</string>
+    <string name="toast_room_full">Attenzione: impossibile entrare nella stanza (piena o non valida).</string>
+
+    <!-- Connection & Offline Strings -->
+    <string name="no_connection_msg">Nessuna connessione a Internet</string>
+    <string name="no_connection_send_err">Impossibile inviare il messaggio: nessuna connessione a Internet.</string>
+    <string name="connection_restored_msg">Connessione a Internet ripristinata.</string>
 </resources>

@@ -1,14 +1,21 @@
 package com.chatlayoutexample;
 
-/**
- * Created by Technovibe on 17-04-2015.
- */
 public class ChatMessage {
     private long id;
     private boolean isMe;
     private String message;
     private Long userId;
     private String dateTime;
+
+    public ChatMessage() {
+    }
+
+    public ChatMessage(long id, boolean isMe, String message, String dateTime) {
+        this.id = id;
+        this.isMe = isMe;
+        this.message = message;
+        this.dateTime = dateTime;
+    }
 
     public long getId() {
         return id;
@@ -35,7 +42,7 @@ public class ChatMessage {
     }
 
     public long getUserId() {
-        return userId;
+        return userId != null ? userId : 0L;
     }
 
     public void setUserId(long userId) {

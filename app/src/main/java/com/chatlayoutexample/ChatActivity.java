@@ -1,684 +1,701 @@
 package com.chatlayoutexample;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.content.pm.PackageManager;
-import android.graphics.Rect;
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+import android.net.NetworkRequest;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
-import android.text.Editable;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.Pair;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.tasks.Task;
-import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.gson.GsonFactory;
-import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.function.Consumer;
-
-class Task1 extends AsyncTask {
-
-    private ChatActivity Frm ;
-    Task1(ChatActivity DriveSH){Frm= DriveSH;}
-
-    @Override
-    protected Object doInBackground(Object... params) {
-        // TODO Auto-generated method stub
-        Log.v ("gaurav", "Thread task 1 is : " + Thread.currentThread().getName());
-
-        //Frm.queryCount();
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Log.v ("gaurav", "Log after sleeping");
-
-        return null;
-    }
-}
-
 
 public class ChatActivity extends AppCompatActivity {
 
-    private EditText messageET;
-    private ListView messagesContainer;
-    private Button sendBtn;
-    private ChatAdapter adapter;
-    private ArrayList<ChatMessage> chatHistory;
     private static final String TAG = "ChatActivity";
-    private static final int REQUEST_CODE_SIGN_IN = 1;
-    private static final int REQUEST_CODE_OPEN_DOCUMENT = 2;
-    private DriveServiceHelper mDriveServiceHelper;
-    private String mOpenFileId;
-    private EditText mFileTitleEditText;
-    private EditText mDocContentEditText;
+
+    // UI Controls
+    private Toolbar toolbar;
+    private TextView txtStatus;
+    private ProgressBar mPrgMain;
+    private LinearLayout bannerNoConnection;
     private EditText mIdIntelocutore;
-    private ImageButton mBtnCollega;
     private ImageButton mBtnPlay;
     private ImageButton mBtnIncolla;
-    private ProgressBar mPrgMain;
-    public boolean flagFolder = false;
-    public List<String> mlistId;
-    public String mId;
-    public String mContentFile;
-    public String mNomeFile;
-    public String mNomeFileConnect;
-    public int miStart=0;
-    public int mIDMessagioIniziale = 0;
-    public int mIntCountFile=0;
-    public boolean bFlagFileExist;
-    public  int i=0;
+    private ImageButton mBtnWhatsApp;
+    private MaterialButton mBtnCollega;
+    private RecyclerView messagesContainer;
+    private LinearLayout emptyStateLayout;
+    private EditText messageET;
+    private FloatingActionButton sendBtn;
 
-    private Timer myTimer;
-    private static final int ESTIMATED_TOAST_HEIGHT_DIPS = 48;
+    // Chat Data & Adapter
+    private ChatAdapter adapter;
+    private LinearLayoutManager layoutManager;
+    private final ArrayList<ChatMessage> chatHistory = new ArrayList<>();
+
+    // Drive & Session State
+    private DriveServiceHelper mDriveServiceHelper;
+    private String mId = "";
+    private String mNomeFile = "";
+    private String mNomeFileConnect = "";
+    private int mIntCountFile = 0;
+    private boolean bFlagFileExist = false;
+
+    // Network Monitoring
+    private ConnectivityManager.NetworkCallback networkCallback;
+    private boolean isNetworkConnected = true;
+
+    // Polling Handler & Runnable
+    private final Handler pollHandler = new Handler(Looper.getMainLooper());
+    private boolean isPollingActive = false;
+    private final Runnable pollRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isPollingActive && isNetworkConnected && mDriveServiceHelper != null && mDriveServiceHelper.bflagStartTimer) {
+                query();
+            }
+            if (isPollingActive) {
+                pollHandler.postDelayed(this, 3000);
+            }
+        }
+    };
+
+    // Activity Result Launcher
+    private final ActivityResultLauncher<Intent> signInLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    handleSignInResult(result.getData());
+                } else {
+                    updateStatus("Accesso Google annullato.", false);
+                    mPrgMain.setVisibility(View.GONE);
+                    Toast.makeText(this, "Accesso a Google Drive necessario per la chat.", Toast.LENGTH_LONG).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        mIdIntelocutore = (EditText) findViewById(R.id.editTextTextMultiLine);
-        mPrgMain =(ProgressBar)  findViewById(R.id.prgMain);
-        mBtnCollega = (ImageButton) findViewById(R.id.BtnCollega);
-        mBtnCollega.setOnClickListener(view -> query());
-        mBtnCollega.setVisibility(View.INVISIBLE);
+        initViews();
+        setupRecyclerView();
+        setupListeners();
+        registerNetworkMonitoring();
 
-        mIdIntelocutore.setOnFocusChangeListener(new View.OnFocusChangeListener()
-        {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus)
-            {
-                if (hasFocus == true)
-                {
-                    showCheatSheet(v,"Id Intelocutore.");
-                    // Show tool tip
-                }else{
-                    // Hide tool tip
-                    showCheatSheet(v,"");
-                }
-            }
-        });
+        // Controllo immediato connettività di rete
+        if (!isNetworkAvailable()) {
+            setOfflineState(true);
+        } else {
+            updateStatus("Connessione a Google Drive…", true);
+            requestSignIn();
+        }
+    }
 
+    private void initViews() {
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
-        mBtnIncolla = (ImageButton) findViewById(R.id.btnIncolla);
-        mBtnIncolla.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                mIdIntelocutore.setText( clipboard.getText().toString());
-
-            }
-        });
-
-
-        mBtnPlay = (ImageButton) findViewById(R.id.btnPlay);
-        mBtnPlay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("ID", mIdIntelocutore.getText().toString());
-                clipboard.setPrimaryClip(clip);
-                Toast.makeText(getBaseContext(), "Copia Id effettuata.", Toast.LENGTH_SHORT).show();
-                mIdIntelocutore.setSelectAllOnFocus(true);
-                mIdIntelocutore.requestFocus();
-            }
-        });
-
-        java.io.File fileConnectChat = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONNECT");
-        fileConnectChat.mkdirs();
-
-        java.io.File fileChat = new java.io.File(Environment.getExternalStorageDirectory() + java.io.File.separator + "Download" + "/CONNECT_CHAR");
-        fileChat.mkdirs();
-
-        initControls();
-        requestSignIn();
+        txtStatus = findViewById(R.id.txtStatus);
+        mPrgMain = findViewById(R.id.prgMain);
+        bannerNoConnection = findViewById(R.id.bannerNoConnection);
+        mIdIntelocutore = findViewById(R.id.editTextTextMultiLine);
+        mBtnPlay = findViewById(R.id.btnPlay);
+        mBtnIncolla = findViewById(R.id.btnIncolla);
+        mBtnWhatsApp = findViewById(R.id.btnWhatsApp);
+        mBtnCollega = findViewById(R.id.BtnCollega);
+        messagesContainer = findViewById(R.id.messagesContainer);
+        emptyStateLayout = findViewById(R.id.emptyStateLayout);
+        messageET = findViewById(R.id.messageEdit);
+        sendBtn = findViewById(R.id.chatSendButton);
 
         messageET.setEnabled(false);
+        sendBtn.setEnabled(false);
+        mBtnPlay.setEnabled(false);
+        mBtnWhatsApp.setEnabled(false);
+    }
 
-        myTimer = new Timer();
-        myTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                    TimerMethod();
+    private void setupRecyclerView() {
+        layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        messagesContainer.setLayoutManager(layoutManager);
+
+        adapter = new ChatAdapter(this, chatHistory);
+        adapter.setOnDataChangedListener(this::updateEmptyState);
+        messagesContainer.setAdapter(adapter);
+
+        updateEmptyState();
+    }
+
+    private void updateEmptyState() {
+        if (emptyStateLayout != null) {
+            emptyStateLayout.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void setupListeners() {
+        mBtnPlay.setOnClickListener(v -> {
+            String idToCopy = mIdIntelocutore.getText().toString().trim();
+            if (!TextUtils.isEmpty(idToCopy)) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
+                ClipData clip = ClipData.newPlainText("ID_STANZA_TETE", shareText);
+                if (clipboard != null) {
+                    clipboard.setPrimaryClip(clip);
+                    Toast.makeText(this, R.string.toast_id_copied, Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
 
-        }, 2000, 3000);
+        mBtnIncolla.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null && clipboard.hasPrimaryClip() && clipboard.getPrimaryClip() != null) {
+                CharSequence text = clipboard.getPrimaryClip().getItemAt(0).getText();
+                if (text != null) {
+                    String extractedId = extractIdFromText(text.toString());
+                    mIdIntelocutore.setText(extractedId);
+                    Toast.makeText(this, R.string.toast_id_pasted, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        mBtnWhatsApp.setOnClickListener(v -> {
+            String idToCopy = mIdIntelocutore.getText().toString().trim();
+            if (!TextUtils.isEmpty(idToCopy)) {
+                String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
+                Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+                whatsappIntent.setType("text/plain");
+                whatsappIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+                whatsappIntent.setPackage("com.whatsapp");
+                try {
+                    startActivity(whatsappIntent);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                    shareIntent.setType("text/plain");
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+                    startActivity(Intent.createChooser(shareIntent, "Condividi ID Stanza"));
+                }
+            } else {
+                Toast.makeText(this, "ID stanza non ancora disponibile.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        mBtnCollega.setOnClickListener(v -> connectToRoom());
+        sendBtn.setOnClickListener(v -> sendMessage());
     }
 
-    private static boolean showCheatSheet(View view, CharSequence text) {
-        if (TextUtils.isEmpty(text)) {
-            return false;
+    private String extractIdFromText(String text) {
+        if (TextUtils.isEmpty(text)) return "";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("([a-zA-Z0-9_\\-]{15,})\\s+([a-zA-Z0-9_\\-]{15,})");
+        java.util.regex.Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            return matcher.group(1) + " " + matcher.group(2);
         }
+        return text.trim();
+    }
 
-        final int[] screenPos = new int[2]; // origin is device display
-        final Rect displayFrame = new Rect(); // includes decorations (e.g. status bar)
-        view.getLocationOnScreen(screenPos);
-        view.getWindowVisibleDisplayFrame(displayFrame);
+    // --- Controllo Connessione di Rete ---
 
-        final Context context = view.getContext();
-        final int viewWidth = view.getWidth();
-        final int viewHeight = view.getHeight();
-        final int viewCenterX = screenPos[0] + viewWidth / 2;
-        final int screenWidth = context.getResources().getDisplayMetrics().widthPixels;
-        final int estimatedToastHeight = (int) (ESTIMATED_TOAST_HEIGHT_DIPS
-                * context.getResources().getDisplayMetrics().density);
+    public boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) return false;
 
-        Toast cheatSheet = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-        boolean showBelow = screenPos[1] < estimatedToastHeight;
-        if (showBelow) {
-            // Show below
-            // Offsets are after decorations (e.g. status bar) are factored in
-            cheatSheet.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                    viewCenterX - screenWidth / 2,
-                    screenPos[1] - displayFrame.top + viewHeight);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Network network = cm.getActiveNetwork();
+            if (network == null) return false;
+            NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+            return capabilities != null && (
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)));
         } else {
-            // Show above
-            // Offsets are after decorations (e.g. status bar) are factored in
-            // NOTE: We can't use Gravity.BOTTOM because when the keyboard is up
-            // its height isn't factored in.
-            cheatSheet.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                    viewCenterX - screenWidth / 2,
-                    screenPos[1] - displayFrame.top - estimatedToastHeight);
+            NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
         }
-
-        cheatSheet.show();
-        return true;
     }
 
+    private void registerNetworkMonitoring() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) return;
 
-    private void TimerMethod()
-    {
-        this.runOnUiThread(Timer_Tick);
+        networkCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(@NonNull Network network) {
+                runOnUiThread(() -> {
+                    if (!isNetworkConnected) {
+                        isNetworkConnected = true;
+                        setOfflineState(false);
+                        Snackbar.make(messagesContainer, R.string.connection_restored_msg, Snackbar.LENGTH_SHORT).show();
+
+                        if (mDriveServiceHelper == null) {
+                            requestSignIn();
+                        } else {
+                            startPolling();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onLost(@NonNull Network network) {
+                runOnUiThread(() -> {
+                    isNetworkConnected = false;
+                    setOfflineState(true);
+                    Snackbar.make(messagesContainer, R.string.no_connection_msg, Snackbar.LENGTH_LONG).show();
+                    stopPolling();
+                });
+            }
+        };
+
+        try {
+            NetworkRequest request = new NetworkRequest.Builder()
+                    .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    .build();
+            cm.registerNetworkCallback(request, networkCallback);
+        } catch (Exception e) {
+            Log.w(TAG, "Impossibile registrare NetworkCallback: " + e.getMessage());
+        }
     }
 
-
-    private Runnable Timer_Tick = new Runnable() {
-        public void run() {
-            if( mDriveServiceHelper.bflagStartTimer) {
-                mBtnCollega.callOnClick();
+    private void unregisterNetworkMonitoring() {
+        if (networkCallback != null) {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm != null) {
+                try {
+                    cm.unregisterNetworkCallback(networkCallback);
+                } catch (Exception ignored) {}
             }
         }
-    };
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        switch (requestCode) {
-            case REQUEST_CODE_SIGN_IN:
-                if (resultCode == Activity.RESULT_OK && resultData != null) {
-                    handleSignInResult(resultData);
-                }
-                break;
-
-            case REQUEST_CODE_OPEN_DOCUMENT:
-                if (resultCode == Activity.RESULT_OK && resultData != null) {
-                    Uri uri = resultData.getData();
-                    if (uri != null) {
-                        openFileFromFilePicker(uri);
-                    }
-                }
-                break;
-        }
-        super.onActivityResult(requestCode, resultCode, resultData);
     }
 
-    /**
-     * Starts a sign-in activity using {@link #REQUEST_CODE_SIGN_IN}.
-     */
+    private void setOfflineState(boolean isOffline) {
+        if (bannerNoConnection != null) {
+            bannerNoConnection.setVisibility(isOffline ? View.VISIBLE : View.GONE);
+        }
+        if (isOffline) {
+            updateStatus(getString(R.string.no_connection_msg), false);
+        } else {
+            updateStatus(getString(R.string.status_ready), false);
+        }
+    }
+
+    private void updateStatus(String status, boolean isLoading) {
+        runOnUiThread(() -> {
+            if (txtStatus != null) {
+                txtStatus.setText(status);
+            }
+            if (mPrgMain != null) {
+                mPrgMain.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            }
+        });
+    }
+
+    private String getDeviceIdentifier() {
+        return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
     private void requestSignIn() {
-        Log.d(TAG, "Requesting sign-in");
+        if (!isNetworkAvailable()) {
+            setOfflineState(true);
+            return;
+        }
 
         GoogleSignInOptions signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                         .requestEmail()
                         .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
                         .build();
+
         GoogleSignInClient client = GoogleSignIn.getClient(this, signInOptions);
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
 
-        // The result of the sign-in Intent is handled in onActivityResult.
-        startActivityForResult(client.getSignInIntent(), REQUEST_CODE_SIGN_IN);
+        if (account != null && GoogleSignIn.hasPermissions(account, new Scope(DriveScopes.DRIVE_FILE))) {
+            setupDriveService(account);
+        } else {
+            signInLauncher.launch(client.getSignInIntent());
         }
+    }
 
-        public String getMyPhoneNumber(){
-            String device_unique_id = Settings.Secure.getString(getBaseContext().getContentResolver(),
-                    Settings.Secure.ANDROID_ID);
-            return device_unique_id;
-        }
+    private void handleSignInResult(Intent resultData) {
+        GoogleSignIn.getSignedInAccountFromIntent(resultData)
+                .addOnSuccessListener(this::setupDriveService)
+                .addOnFailureListener(exception -> {
+                    Log.e(TAG, "Accesso a Google fallito", exception);
+                    updateStatus("Autenticazione fallita.", false);
+                    Toast.makeText(this, "Errore di accesso: " + exception.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
 
-    /**
-     * Handles the {@code result} of a completed sign-in activity initiated from {@link
-     * #requestSignIn()}.
-     */
-    private void handleSignInResult(Intent result) {
-        GoogleSignIn.getSignedInAccountFromIntent(result)
-                .addOnSuccessListener(googleAccount -> {
-                    Log.d(TAG, "Signed in as " + googleAccount.getEmail());
+    private void setupDriveService(GoogleSignInAccount googleAccount) {
+        Log.d(TAG, "Accesso eseguito come: " + googleAccount.getEmail());
+        updateStatus("Inizializzazione stanze Drive…", true);
 
-                    // Use the authenticated account to sign in to the Drive service.
-                    GoogleAccountCredential credential =
-                            GoogleAccountCredential.usingOAuth2(
-                                    this, Collections.singleton(DriveScopes.DRIVE_FILE));
-                    credential.setSelectedAccount(googleAccount.getAccount());
-                    Drive googleDriveService =
-                            new Drive.Builder(
-                                    AndroidHttp.newCompatibleTransport(),
-                                    new GsonFactory(),
-                                    credential)
-                                    .setApplicationName("Drive API Migration")
-                                    .build();
+        GoogleAccountCredential credential =
+                GoogleAccountCredential.usingOAuth2(
+                        this, Collections.singleton(DriveScopes.DRIVE_FILE));
+        credential.setSelectedAccount(googleAccount.getAccount());
 
-                    // The DriveServiceHelper encapsulates all REST API and SAF functionality.
-                    // Its instantiation is required before handling any onClick actions.
-                    mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
+        Drive googleDriveService = new Drive.Builder(
+                new NetHttpTransport(),
+                new GsonFactory(),
+                credential)
+                .setApplicationName("TeteATete Chat")
+                .build();
 
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ITALY);
-                    String time=sdf.format(new Date());
+        mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
 
-                    String Folder = String.format("CHAT_%s",time);
-                    String FolderC = String.format("CHAT_CONNECT_%s",time);
-                    createFolder(FolderC,"F");
-                    mNomeFile = String.format("%s_C", getMyPhoneNumber());
-                    createFile(mNomeFile,"");
-                    createFolder(Folder,"C");
-                    mBtnPlay.setEnabled(true);
-                    sendBtn.setEnabled(true);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ITALY);
+        String time = sdf.format(new Date());
 
+        String folder = String.format("CHAT_%s", time);
+        String folderC = String.format("CHAT_CONNECT_%s", time);
+
+        mDriveServiceHelper.createFolder(folderC, "F")
+                .continueWithTask(task -> {
+                    String folderCId = task.getResult();
+                    mId = (folderCId != null ? folderCId : "") + " ";
+                    return mDriveServiceHelper.createFolder(folder, "C");
                 })
-                .addOnFailureListener(exception -> Log.e(TAG, "Unable to sign in.", exception));
-    }
+                .addOnSuccessListener(folderId -> {
+                    mId += (folderId != null ? folderId : "");
+                    String cleanId = mId.trim();
+                    if (cleanId.startsWith("null")) {
+                        cleanId = cleanId.substring(4).trim();
+                    }
+                    mIdIntelocutore.setText(cleanId);
+                    updateStatus(getString(R.string.status_ready), false);
 
-    /**
-     * Opens the Storage Access Framework file picker using {@link #REQUEST_CODE_OPEN_DOCUMENT}.
-     */
-    private void openFilePicker() {
-        if (mDriveServiceHelper != null) {
-            Log.d(TAG, "Opening file picker.");
+                    mDriveServiceHelper.setmIdFolderCurrent(folderId);
+                    mNomeFile = String.format("%s_C", getDeviceIdentifier());
+                    createFile(mNomeFile, "");
 
-            Intent pickerIntent = mDriveServiceHelper.createFilePickerIntent();
+                    mBtnPlay.setEnabled(true);
+                    mBtnWhatsApp.setEnabled(true);
+                    sendBtn.setEnabled(true);
+                    messageET.setEnabled(true);
 
-            // The result of the SAF Intent is handled in onActivityResult.
-            startActivityForResult(pickerIntent, REQUEST_CODE_OPEN_DOCUMENT);
-        }
-    }
-
-    /**
-     * Opens a file from its {@code uri} returned from the Storage Access Framework file picker
-     * initiated by {@link #openFilePicker()}.
-     */
-    private void openFileFromFilePicker(Uri uri) {
-        if (mDriveServiceHelper != null) {
-            Log.d(TAG, "Opening " + uri.getPath());
-
-            mDriveServiceHelper.openFileUsingStorageAccessFramework(getContentResolver(), uri)
-                    .addOnSuccessListener(nameAndContent -> {
-                        String name = nameAndContent.first;
-                        String content = nameAndContent.second;
-                    // Files opened through SAF cannot be modified.
-                        setReadOnlyMode();
-                    })
-                    .addOnFailureListener(exception ->
-                            Log.e(TAG, "Unable to open file from picker.", exception));
-        }
-    }
-
-    /**
-     * Creates a new file via the Drive REST API.
-     */
-    private void createFile(String NomeFile,String Message) {
-        if (mDriveServiceHelper != null) {
-            Log.d(TAG, "Creating a file.");
-            flagFolder=false;
-
-            mDriveServiceHelper.createFile(NomeFile,Message)
-                    .addOnSuccessListener(fileId -> readFile(fileId))
-                    .addOnFailureListener(exception ->
-                            Toast.makeText(this, String.valueOf(exception.toString()),Toast.LENGTH_LONG).show());
-        }
-    }
-
-    private void createFileConnect(String NomeFile,String Message,String Folder) {
-        if (mDriveServiceHelper != null) {
-            Log.d(TAG, "Creating a file.");
-            flagFolder=false;
-
-            mDriveServiceHelper.createFileConnect(NomeFile,Message,Folder)
-                    .addOnSuccessListener(fileId -> readFileNULL(fileId))
-                    .addOnFailureListener(exception ->
-                            Toast.makeText(this, String.valueOf(exception.toString()),Toast.LENGTH_LONG).show());
-        }
-    }
-
-    private void createFolder(String NomeFile,String Tipo) {
-        if (mDriveServiceHelper != null) {
-            Log.d(TAG, "Creating a file.");
-            flagFolder=true;
-
-            mDriveServiceHelper.createFolder(NomeFile,Tipo)
-                    .addOnSuccessListener(fileId -> readFile(fileId))
-                    .addOnFailureListener(exception ->
-                            Toast.makeText(this, String.valueOf(exception.toString()),Toast.LENGTH_LONG).show());
-        }
-    }
-
-    /**
-     * Retrieves the title and content of a file identified by {@code fileId} and populates the UI.
-     */
-    private void readFile(String fileId) {
-
-            if(flagFolder) {
-                mId += mDriveServiceHelper.getmIdFolderCurrent() + " ";
-                mIDMessagioIniziale++;
-
-            }
-            if(mIDMessagioIniziale==3)
-            {
-                mIdIntelocutore.setText(mId.substring(4));
-                //mIdIntelocutore.setText(mId);
-
-                mIDMessagioIniziale=0;
-                messageET.setEnabled(true);
-                mPrgMain.setVisibility(View.INVISIBLE);
-
-
-            }
-    }
-
-    private void readFileNULL(String fileId) {
-
-        mDriveServiceHelper.bflagStartTimer=true;
-
-    }
-
-    private void readFileDrive(String fileId) {
-
-        if (mDriveServiceHelper != null) {
-            Log.d(TAG, "Reading file " + fileId);
-
-            mDriveServiceHelper.readFile(fileId)
-                    .addOnSuccessListener(nameAndContent -> {
-                        String ContentFile = nameAndContent.second;
-
-                        ChatMessage chatMessage = new ChatMessage();
-                        chatMessage.setId(122);//dummy
-                        chatMessage.setMessage(ContentFile);
-                        chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-                        chatMessage.setMe(false);
-
-                        if(ContentFile.isEmpty() == false) {
-                            displayMessage(chatMessage);
-                            DeleteFile(fileId);
-                        }
-
-                    })
-                    .addOnFailureListener(exception ->
-                            Log.e(TAG, "Couldn't read file.", exception));
-        }
-    }
-
-    public void queryCount(String [] IdFolders) {
-        if (mDriveServiceHelper != null) {
-            Log.d(TAG, "Querying for files.");
-           // bflagStartTimer=false;
-
-            mDriveServiceHelper.setmIdFolderCurrent(IdFolders[1]);
-            mDriveServiceHelper.queryFilesCount()
-            .addOnSuccessListener(fileList -> {
-
-                List<File> lstFile = fileList.getFiles();
-                mIntCountFile=  lstFile.size();
-                bFlagFileExist=false;
-                if(mIntCountFile < 2) {
-
-                   for (File file : fileList.getFiles()) {
-                        mNomeFileConnect = String.format("%s_C", getMyPhoneNumber());
-                        if (file.getName().compareToIgnoreCase(mNomeFileConnect) == 0) {
-                            bFlagFileExist = true;
-                        }
+                    startPolling();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Errore inizializzazione stanze: " + (e != null ? e.getMessage() : "sconosciuto"), e);
+                    String errorMsg = e != null ? e.getMessage() : "Errore sconosciuto";
+                    updateStatus("Errore: " + errorMsg, false);
+                    if (!isNetworkAvailable()) {
+                        setOfflineState(true);
+                    } else {
+                        Toast.makeText(this, "Errore Drive: " + errorMsg, Toast.LENGTH_LONG).show();
                     }
 
-                    if(!bFlagFileExist) {
-
-                         createFileConnect(String.format("%s_C", getMyPhoneNumber()), "", IdFolders[2]);
-                     }
-                    else
-                    {
-                        mDriveServiceHelper.setmIdFolderCurrent(mDriveServiceHelper.mGlobalIdFolder);
+                    if (e instanceof com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException) {
+                        try {
+                            startActivityForResult(
+                                    ((com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException) e).getIntent(),
+                                    1001
+                            );
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Impossibile avviare intent di recupero autorizzazione", ex);
+                        }
                     }
+                });
+    }
 
-                }
-                else {
-                    Toast.makeText(getBaseContext(),"ATTENZIONE impossibile entrare nella stanza",Toast.LENGTH_LONG);
-                    mDriveServiceHelper.setmIdFolderCurrent(mDriveServiceHelper.mGlobalIdFolder);
-                }
-            })
-            .addOnFailureListener(exception -> {
-                Toast.makeText(this, String.valueOf(exception.toString()),Toast.LENGTH_LONG).show();
-            });
+    private void startPolling() {
+        if (!isPollingActive && isNetworkConnected) {
+            isPollingActive = true;
+            pollHandler.postDelayed(pollRunnable, 2000);
         }
     }
 
-    /**
-     * Queries the Drive REST API for files visible to this app and lists them in the content view.
-     */
-    private void query() {
-        if (mDriveServiceHelper != null) {
-            Log.d(TAG, "Querying for files.");
+    private void stopPolling() {
+        isPollingActive = false;
+        pollHandler.removeCallbacks(pollRunnable);
+    }
 
-            mDriveServiceHelper.queryFiles()
-                    .addOnSuccessListener(fileList -> {
-                        for (File file : fileList.getFiles()) {
-                            if(file.getName().compareToIgnoreCase(mNomeFile) != 0 ) {
-                                readFileDrive(file.getId());
+    private void createFile(String nomeFile, String message) {
+        if (mDriveServiceHelper != null) {
+            mDriveServiceHelper.createFile(nomeFile, message)
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Errore creazione file: " + e.getMessage());
+                        if (!isNetworkAvailable()) {
+                            setOfflineState(true);
+                        }
+                    });
+        }
+    }
+
+    private void createFileConnect(String nomeFile, String message, String folder) {
+        if (mDriveServiceHelper != null) {
+            mDriveServiceHelper.createFileConnect(nomeFile, message, folder)
+                    .addOnSuccessListener(fileId -> {
+                        if (mDriveServiceHelper != null) {
+                            mDriveServiceHelper.bflagStartTimer = true;
+                        }
+                        updateStatus(getString(R.string.status_connected), false);
+                        Toast.makeText(this, "Connessione alla stanza completata!", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        updateStatus("Errore connessione stanza", false);
+                        if (!isNetworkAvailable()) {
+                            setOfflineState(true);
+                        } else {
+                            Toast.makeText(this, "Errore: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+        }
+    }
+
+    private void connectToRoom() {
+        if (!isNetworkAvailable()) {
+            setOfflineState(true);
+            Toast.makeText(this, R.string.no_connection_send_err, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String inputId = mIdIntelocutore.getText().toString().trim();
+        if (TextUtils.isEmpty(inputId)) {
+            Toast.makeText(this, "Inserisci o incolla l'ID della stanza prima di connettere.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] idFolders = inputId.split(" ");
+        if (idFolders.length < 2) {
+            Toast.makeText(this, "ID stanza non valido.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        updateStatus(getString(R.string.toast_connecting), true);
+        if (mDriveServiceHelper != null) {
+            mDriveServiceHelper.bflagStartTimer = false;
+        }
+        queryCount(idFolders);
+    }
+
+    public void queryCount(String[] idFolders) {
+        if (mDriveServiceHelper == null) return;
+
+        mDriveServiceHelper.setmIdFolderCurrent(idFolders[0]);
+        mDriveServiceHelper.queryFilesCount()
+                .addOnSuccessListener(fileList -> {
+                    List<File> lstFile = fileList.getFiles();
+                    mIntCountFile = (lstFile != null) ? lstFile.size() : 0;
+                    bFlagFileExist = false;
+
+                    if (mIntCountFile < 2) {
+                        mNomeFileConnect = String.format("%s_C", getDeviceIdentifier());
+                        if (lstFile != null) {
+                            for (File file : lstFile) {
+                                if (mNomeFileConnect.equalsIgnoreCase(file.getName())) {
+                                    bFlagFileExist = true;
+                                    break;
+                                }
                             }
                         }
 
-                    })
-                    .addOnFailureListener(exception -> {
-                        Toast.makeText(this, String.valueOf(exception.toString()),Toast.LENGTH_LONG).show();
-                    });
-            }
+                        if (!bFlagFileExist && idFolders.length > 1) {
+                            createFileConnect(mNomeFileConnect, "", idFolders[1]);
+                        } else {
+                            mDriveServiceHelper.setmIdFolderCurrent(mDriveServiceHelper.mGlobalIdFolder);
+                            updateStatus(getString(R.string.status_connected), false);
+                        }
+                    } else {
+                        Toast.makeText(this, R.string.toast_room_full, Toast.LENGTH_LONG).show();
+                        mDriveServiceHelper.setmIdFolderCurrent(mDriveServiceHelper.mGlobalIdFolder);
+                        updateStatus(getString(R.string.status_ready), false);
+                    }
+                })
+                .addOnFailureListener(exception -> {
+                    updateStatus("Errore verifica stanza", false);
+                    if (!isNetworkAvailable()) {
+                        setOfflineState(true);
+                    } else {
+                        Toast.makeText(this, "Errore: " + exception.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
-    public void DeleteFile(String FileId) {
-        mDriveServiceHelper.DeleteFile(FileId)
-           .addOnFailureListener(exception ->
-                Log.e(TAG, "Unable to save file via REST.", exception));
+    private void query() {
+        if (mDriveServiceHelper == null || !isNetworkAvailable()) return;
 
+        mDriveServiceHelper.queryFiles()
+                .addOnSuccessListener(fileList -> {
+                    if (fileList != null && fileList.getFiles() != null) {
+                        for (File file : fileList.getFiles()) {
+                            if (!file.getName().equalsIgnoreCase(mNomeFile)) {
+                                readFileDrive(file.getId());
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(exception -> {
+                    Log.w(TAG, "Query file Drive in background fallita: " + exception.getMessage());
+                    if (!isNetworkAvailable()) {
+                        setOfflineState(true);
+                    }
+                });
     }
 
-    /**
-     * Updates the UI to read-only mode.
-     */
-    private void setReadOnlyMode() {
-        mFileTitleEditText.setEnabled(false);
-        mDocContentEditText.setEnabled(false);
-        mOpenFileId = null;
+    private void readFileDrive(String fileId) {
+        if (mDriveServiceHelper == null) return;
+
+        mDriveServiceHelper.readFile(fileId)
+                .addOnSuccessListener(nameAndContent -> {
+                    String contentFile = nameAndContent.second;
+                    if (!TextUtils.isEmpty(contentFile)) {
+                        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                        ChatMessage chatMessage = new ChatMessage(
+                                System.currentTimeMillis(),
+                                false,
+                                contentFile,
+                                timeFormat.format(new Date())
+                        );
+
+                        displayMessage(chatMessage);
+                        removeDriveFile(fileId);
+                    }
+                })
+                .addOnFailureListener(exception -> Log.e(TAG, "Impossibile leggere file: " + fileId, exception));
     }
 
-    /**
-     * Updates the UI to read/write mode on the document identified by {@code fileId}.
-     */
-    private void setReadWriteMode(String fileId) {
-        mFileTitleEditText.setEnabled(true);
-        mDocContentEditText.setEnabled(true);
-        mOpenFileId = fileId;
+    private void sendMessage() {
+        // Controllo connettività prima dell'invio
+        if (!isNetworkAvailable()) {
+            setOfflineState(true);
+            Snackbar.make(messagesContainer, R.string.no_connection_send_err, Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        String messageText = messageET.getText().toString().trim();
+        if (TextUtils.isEmpty(messageText)) {
+            return;
+        }
+
+        mNomeFile = String.format("%s_A", getDeviceIdentifier());
+        createFile(mNomeFile, messageText);
+
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        ChatMessage chatMessage = new ChatMessage(
+                System.currentTimeMillis(),
+                true,
+                messageText,
+                timeFormat.format(new Date())
+        );
+
+        messageET.setText("");
+        displayMessage(chatMessage);
+    }
+
+    public void displayMessage(ChatMessage message) {
+        runOnUiThread(() -> {
+            adapter.add(message);
+            messagesContainer.scrollToPosition(adapter.getItemCount() - 1);
+        });
+    }
+
+    public void removeDriveFile(String fileId) {
+        if (mDriveServiceHelper != null && isNetworkAvailable()) {
+            mDriveServiceHelper.DeleteFile(fileId);
+        }
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-
+    protected void onResume() {
+        super.onResume();
+        if (isNetworkAvailable()) {
+            setOfflineState(false);
+            if (mDriveServiceHelper != null) {
+                startPolling();
+            }
+        } else {
+            setOfflineState(true);
+        }
     }
 
-   @Override
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopPolling();
+    }
 
-   public void onDestroy() {
-       super.onDestroy();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopPolling();
+        unregisterNetworkMonitoring();
 
-       String[] IdFolders = mId.split(" ");
-
-       DeleteFile(IdFolders[1]);
-       DeleteFile(IdFolders[2]);
-
-       Toast.makeText(getBaseContext(),"Chiusura Chat, chiudere e riaprire.",Toast.LENGTH_LONG);
-
-   }
-
+        if (mDriveServiceHelper != null && !TextUtils.isEmpty(mId)) {
+            String[] idFolders = mId.split(" ");
+            for (String folderId : idFolders) {
+                if (!TextUtils.isEmpty(folderId) && !"null".equalsIgnoreCase(folderId)) {
+                    removeDriveFile(folderId);
+                }
+            }
+            mDriveServiceHelper.shutdown();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_chat, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_settings) {
-            mId = mIdIntelocutore.getText().toString();
-            String[] IdFolders = mId.split(" ");
-
-            mDriveServiceHelper.bflagStartTimer= false;
-            queryCount(IdFolders);
-
+        if (item.getItemId() == R.id.action_settings) {
+            connectToRoom();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
-
-    private void initControls() {
-        messagesContainer = (ListView) findViewById(R.id.messagesContainer);
-        messageET = (EditText) findViewById(R.id.messageEdit);
-        sendBtn = (Button) findViewById(R.id.chatSendButton);
-
-        RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
-
-        loadDummyHistory();
-
-        sendBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                String messageText = messageET.getText().toString();
-                if (TextUtils.isEmpty(messageText)) {
-                    return;
-                }
-
-                mNomeFile = String.format("%s_A", getMyPhoneNumber());
-                createFile(mNomeFile,messageText);
-                ChatMessage chatMessage = new ChatMessage();
-                chatMessage.setId(122);//dummy
-                chatMessage.setMessage(messageText);
-                chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-                chatMessage.setMe(true);
-
-                messageET.setText("");
-
-                displayMessage(chatMessage);
-            }
-        });
-
-        sendBtn.setEnabled(false);
-        messageET.setEnabled(false);
-    }
-
-    public void displayMessage(ChatMessage message) {
-        adapter.add(message);
-        adapter.notifyDataSetChanged();
-        scroll();
-    }
-
-    private void scroll() {
-        messagesContainer.setSelection(messagesContainer.getCount() - 1);
-    }
-
-    private void loadDummyHistory(){
-
-        chatHistory = new ArrayList<ChatMessage>();
-
-        ChatMessage msg = new ChatMessage();
-        msg.setId(1);
-        msg.setMe(false);
-        msg.setMessage("Ciao");
-        msg.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-        chatHistory.add(msg);
-        ChatMessage msg1 = new ChatMessage();
-        msg1.setId(2);
-        msg1.setMe(false);
-        msg1.setMessage("Ciao come stai?");
-        msg1.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-        chatHistory.add(msg1);
-
-        adapter = new ChatAdapter(ChatActivity.this, new ArrayList<ChatMessage>());
-        messagesContainer.setAdapter(adapter);
-
-        for(int i=0; i<chatHistory.size(); i++) {
-            ChatMessage message = chatHistory.get(i);
-            displayMessage(message);
-        }
-
-    }
-
 }

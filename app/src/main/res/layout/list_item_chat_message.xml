@@ -1,40 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:layout_width="wrap_content"
-android:layout_height="wrap_content">
-<LinearLayout
-    android:id="@+id/content"
-    android:layout_width="wrap_content"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_alignParentRight="true"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/txtInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="30sp"
-        android:layout_gravity="right"
-        android:textSize="12sp"
-        android:textColor="@android:color/darker_gray" />
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
 
     <LinearLayout
         android:id="@+id/contentWithBackground"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:background="@drawable/in_message_bg"
-        android:paddingLeft="10dp"
-        android:paddingBottom="10dp"
-        android:orientation="vertical">
+        android:layout_gravity="end"
+        android:background="@drawable/bg_message_outgoing"
+        android:elevation="1dp"
+        android:maxWidth="280dp"
+        android:orientation="vertical"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="8dp">
 
         <TextView
             android:id="@+id/txtMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@android:color/black"
-            android:maxWidth="240dp" />
+            android:autoLink="web"
+            android:lineSpacingExtra="2dp"
+            android:linksClickable="true"
+            android:maxWidth="260dp"
+            android:text="Ciao, questo è un messaggio"
+            android:textColor="@color/bubble_outgoing_text"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/txtInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="3dp"
+            android:text="10:30"
+            android:textColor="@color/bubble_outgoing_time"
+            android:textSize="11sp" />
 
     </LinearLayout>
 
 </LinearLayout>
-</RelativeLayout>

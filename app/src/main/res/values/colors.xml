@@ -1,4 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splashBackground">#F7D6D4</color>
+    <!-- Brand / Primary Colors -->
+    <color name="primary">#1E88E5</color>
+    <color name="primaryVariant">#1565C0</color>
+    <color name="primaryLight">#BBDEFB</color>
+    <color name="secondary">#00897B</color>
+    <color name="secondaryVariant">#00695C</color>
+
+    <!-- Backgrounds & Surfaces -->
+    <color name="background">#F4F6F9</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#ECEFF4</color>
+
+    <!-- Chat Bubbles -->
+    <color name="bubble_outgoing">#1E88E5</color>
+    <color name="bubble_outgoing_text">#FFFFFF</color>
+    <color name="bubble_outgoing_time">#D0E4FF</color>
+
+    <color name="bubble_incoming">#FFFFFF</color>
+    <color name="bubble_incoming_text">#1A1C1E</color>
+    <color name="bubble_incoming_time">#757575</color>
+    <color name="bubble_incoming_stroke">#E0E0E0</color>
+
+    <!-- Status Indicators -->
+    <color name="status_connected">#2E7D32</color>
+    <color name="status_connecting">#EF6C00</color>
+    <color name="status_disconnected">#C62828</color>
+    <color name="status_bg_connected">#E8F5E9</color>
+    <color name="status_bg_connecting">#FFF3E0</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#1A1C1E</color>
+    <color name="text_secondary">#5F6368</color>
+    <color name="text_hint">#9AA0A6</color>
+    <color name="divider">#E0E0E0</color>
+
+    <!-- Splash Screen -->
+    <color name="splash_bg">#1565C0</color>
+    <color name="splash_text">#FFFFFF</color>
 </resources>
