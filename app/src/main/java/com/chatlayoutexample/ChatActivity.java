@@ -77,7 +77,9 @@ public class ChatActivity extends AppCompatActivity {
     private TextView txtStatus;
     private ProgressBar mPrgMain;
     private LinearLayout bannerNoConnection;
+    private EditText mIdIntelocutore;
     private ImageButton mBtnPlay;
+    private ImageButton mBtnIncolla;
     private ImageButton mBtnWhatsApp;
     private MaterialButton mBtnCollega;
     private RecyclerView messagesContainer;
@@ -208,7 +210,9 @@ public class ChatActivity extends AppCompatActivity {
         txtStatus = findViewById(R.id.txtStatus);
         mPrgMain = findViewById(R.id.prgMain);
         bannerNoConnection = findViewById(R.id.bannerNoConnection);
+        mIdIntelocutore = findViewById(R.id.editTextTextMultiLine);
         mBtnPlay = findViewById(R.id.btnPlay);
+        mBtnIncolla = findViewById(R.id.btnIncolla);
         mBtnWhatsApp = findViewById(R.id.btnWhatsApp);
         mBtnCollega = findViewById(R.id.BtnCollega);
         messagesContainer = findViewById(R.id.messagesContainer);
@@ -248,12 +252,12 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * Configura i listener di click per i pulsanti di interazione (copia ID, condivisione WhatsApp,
+     * Configura i listener di click per i pulsanti di interazione (copia ID, incolla ID, condivisione WhatsApp,
      * collegamento alla stanza e invio messaggi).
      */
     private void setupListeners() {
         mBtnPlay.setOnClickListener(v -> {
-            String idToCopy = currentSelectedRoomId.trim();
+            String idToCopy = mIdIntelocutore != null ? mIdIntelocutore.getText().toString().trim() : currentSelectedRoomId.trim();
             if (!TextUtils.isEmpty(idToCopy)) {
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
@@ -261,6 +265,19 @@ public class ChatActivity extends AppCompatActivity {
                 if (clipboard != null) {
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(this, R.string.toast_id_copied, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        mBtnIncolla.setOnClickListener(v -> {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null && clipboard.hasPrimaryClip() && clipboard.getPrimaryClip() != null) {
+                CharSequence text = clipboard.getPrimaryClip().getItemAt(0).getText();
+                if (text != null) {
+                    if (mIdIntelocutore != null) {
+                        mIdIntelocutore.setText(text.toString().trim());
+                    }
+                    Toast.makeText(this, R.string.toast_id_pasted, Toast.LENGTH_SHORT).show();
                 }
             }
         });
