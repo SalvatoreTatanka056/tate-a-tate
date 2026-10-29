@@ -259,6 +259,19 @@ public class DriveServiceHelper {
         });
     }
 
+    public Task<FileList> queryFolderFilesCount(String folderId) {
+        return Tasks.call(mExecutor, () -> {
+            if (folderId == null || folderId.isEmpty()) {
+                return new FileList();
+            }
+            String fileQuery = "'" + folderId + "' in parents and trashed=false";
+            return mDriveService.files().list()
+                    .setQ(fileQuery)
+                    .setFields("files(id, name)")
+                    .execute();
+        });
+    }
+
     public Intent createFilePickerIntent() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);

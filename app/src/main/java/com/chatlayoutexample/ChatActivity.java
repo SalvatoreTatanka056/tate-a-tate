@@ -49,6 +49,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -99,6 +100,7 @@ public class ChatActivity extends AppCompatActivity {
     private boolean bFlagFileExist = false;
     private final List<String> allCreatedRooms = new ArrayList<>();
     private final List<String> allCreatedFolderIds = new ArrayList<>();
+    private final List<String> connectionFolderIds = new ArrayList<>();
 
     // Network Monitoring
     private ConnectivityManager.NetworkCallback networkCallback;
@@ -275,65 +277,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        mBtnWhatsApp.setOnClickListener(v -> {
-            if (allCreatedRooms.isEmpty()) {
-                Toast.makeText(this, "Stanze non ancora pronte.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            CharSequence[] roomNames = new CharSequence[allCreatedRooms.size()];
-            for (int i = 0; i < allCreatedRooms.size(); i++) {
-                roomNames[i] = "Stanza " + (i + 1) + (i == 0 ? " (Corrente)" : "");
-            }
-
-            new android.app.AlertDialog.Builder(this)
-                    .setTitle("Seleziona quale stanza inviare")
-                    .setItems(roomNames, (dialogInterface, whichRoom) -> {
-                        String selectedRoomId = allCreatedRooms.get(whichRoom);
-                        mIdIntelocutore.setText(selectedRoomId);
-                        mId = selectedRoomId;
-                        String[] parts = selectedRoomId.split(" ");
-                        if (parts.length > 1 && mDriveServiceHelper != null) {
-                            mDriveServiceHelper.setmIdFolderCurrent(parts[1]);
-                        }
-
-                        android.app.AlertDialog.Builder phoneBuilder = new android.app.AlertDialog.Builder(this);
-                        phoneBuilder.setTitle("Invia Stanza " + (whichRoom + 1) + " su WhatsApp");
-                        phoneBuilder.setMessage("Inserisci il numero di telefono con prefisso (es. +39...):");
-
-                        final EditText input = new EditText(this);
-                        input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
-                        input.setHint("+393331234567");
-                        int padding = (int) (16 * getResources().getDisplayMetrics().density);
-
-                        LinearLayout container = new LinearLayout(this);
-                        container.setOrientation(LinearLayout.VERTICAL);
-                        container.setPadding(padding, 0, padding, 0);
-                        container.addView(input);
-                        phoneBuilder.setView(container);
-
-                        phoneBuilder.setPositiveButton("Invia", (d, w) -> {
-                            String phone = input.getText().toString().trim();
-                            String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête (Stanza " + (whichRoom + 1) + ")!\nID Stanza: " + selectedRoomId + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
-
-                            if (!TextUtils.isEmpty(phone)) {
-                                String cleanedPhone = phone.replaceAll("[^0-9+]", "");
-                                String url = "https://api.whatsapp.com/send?phone=" + cleanedPhone + "&text=" + android.net.Uri.encode(shareText);
-                                try {
-                                    Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
-                                    startActivity(intent);
-                                } catch (Exception e) {
-                                    Toast.makeText(this, "Impossibile aprire WhatsApp: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                }
-                            } else {
-                                shareViaWhatsAppStandard(shareText);
-                            }
-                        });
-                        phoneBuilder.setNegativeButton("Annulla", (d, w) -> d.cancel());
-                        phoneBuilder.show();
-                    })
-                    .show();
-        });
+        mBtnWhatsApp.setOnClickListener(v -> checkRoomsOccupancyAndShowDialog());
 
         mBtnCollega.setOnClickListener(v -> connectToRoom());
         sendBtn.setOnClickListener(v -> sendMessage());
@@ -369,6 +313,97 @@ public class ChatActivity extends AppCompatActivity {
      * @param text Testo sorgente da cui estrarre l'ID.
      * @return L'ID estratto o il testo originale formattato.
      */
+    private void checkRoomsOccupancyAndShowDialog() {
+        if (allCreatedRooms.isEmpty() || connectionFolderIds.size() < 3 || mDriveServiceHelper == null) {
+            Toast.makeText(this, "Stanze non ancora pronte.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        updateStatus("Verifica disponibilità stanze...", true);
+
+        com.google.android.gms.tasks.Task<FileList> task1 = mDriveServiceHelper.queryFolderFilesCount(connectionFolderIds.get(0));
+        com.google.android.gms.tasks.Task<FileList> task2 = mDriveServiceHelper.queryFolderFilesCount(connectionFolderIds.get(1));
+        com.google.android.gms.tasks.Task<FileList> task3 = mDriveServiceHelper.queryFolderFilesCount(connectionFolderIds.get(2));
+
+        com.google.android.gms.tasks.Tasks.whenAllSuccess(task1, task2, task3)
+                .addOnSuccessListener(results -> {
+                    updateStatus(getString(R.string.status_ready), false);
+
+                    CharSequence[] roomNames = new CharSequence[3];
+                    for (int i = 0; i < 3; i++) {
+                        FileList fl = (FileList) results.get(i);
+                        int count = 0;
+                        if (fl != null && fl.getFiles() != null) {
+                            for (File f : fl.getFiles()) {
+                                if (f.getName() != null && f.getName().endsWith("_C")) {
+                                    count++;
+                                }
+                            }
+                        }
+
+                        boolean isOccupied = count >= 2;
+                        roomNames[i] = String.format("Stanza %d %s", (i + 1), isOccupied ? "🔴 (Occupata - 2 persone)" : "🟢 (Libera)");
+                    }
+
+                    showRoomSelectionDialog(roomNames);
+                })
+                .addOnFailureListener(e -> {
+                    updateStatus(getString(R.string.status_ready), false);
+                    CharSequence[] defaultNames = {"Stanza 1 (Libera)", "Stanza 2 (Libera)", "Stanza 3 (Libera)"};
+                    showRoomSelectionDialog(defaultNames);
+                });
+    }
+
+    private void showRoomSelectionDialog(CharSequence[] roomNames) {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Seleziona quale stanza inviare")
+                .setItems(roomNames, (dialogInterface, whichRoom) -> {
+                    String selectedRoomId = allCreatedRooms.get(whichRoom);
+                    mIdIntelocutore.setText(selectedRoomId);
+                    mId = selectedRoomId;
+                    String[] parts = selectedRoomId.split(" ");
+                    if (parts.length > 1 && mDriveServiceHelper != null) {
+                        mDriveServiceHelper.setmIdFolderCurrent(parts[1]);
+                    }
+
+                    android.app.AlertDialog.Builder phoneBuilder = new android.app.AlertDialog.Builder(this);
+                    phoneBuilder.setTitle("Invia Stanza " + (whichRoom + 1) + " su WhatsApp");
+                    phoneBuilder.setMessage("Inserisci il numero di telefono con prefisso (es. +39...):");
+
+                    final EditText input = new EditText(this);
+                    input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+                    input.setHint("+393331234567");
+                    int padding = (int) (16 * getResources().getDisplayMetrics().density);
+
+                    LinearLayout container = new LinearLayout(this);
+                    container.setOrientation(LinearLayout.VERTICAL);
+                    container.setPadding(padding, 0, padding, 0);
+                    container.addView(input);
+                    phoneBuilder.setView(container);
+
+                    phoneBuilder.setPositiveButton("Invia", (d, w) -> {
+                        String phone = input.getText().toString().trim();
+                        String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête (Stanza " + (whichRoom + 1) + ")!\nID Stanza: " + selectedRoomId + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
+
+                        if (!TextUtils.isEmpty(phone)) {
+                            String cleanedPhone = phone.replaceAll("[^0-9+]", "");
+                            String url = "https://api.whatsapp.com/send?phone=" + cleanedPhone + "&text=" + android.net.Uri.encode(shareText);
+                            try {
+                                Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                                startActivity(intent);
+                            } catch (Exception ex) {
+                                Toast.makeText(this, "Impossibile aprire WhatsApp: " + ex.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            shareViaWhatsAppStandard(shareText);
+                        }
+                    });
+                    phoneBuilder.setNegativeButton("Annulla", (d, w) -> d.cancel());
+                    phoneBuilder.show();
+                })
+                .show();
+    }
+
     private String extractIdFromText(String text) {
         if (TextUtils.isEmpty(text)) return "";
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("([a-zA-Z0-9_\\-]{15,})\\s+([a-zA-Z0-9_\\-]{15,})");
@@ -622,6 +657,7 @@ public class ChatActivity extends AppCompatActivity {
 
         allCreatedRooms.clear();
         allCreatedFolderIds.clear();
+        connectionFolderIds.clear();
 
         // Trova o crea le 3 stanze fisse
         for (int i = 1; i <= 3; i++) {
@@ -632,7 +668,10 @@ public class ChatActivity extends AppCompatActivity {
             mDriveServiceHelper.findOrCreateFolder(folderC, "F")
                     .continueWithTask(task -> {
                         String folderCId = task.getResult();
-                        if (folderCId != null) allCreatedFolderIds.add(folderCId);
+                        if (folderCId != null) {
+                            allCreatedFolderIds.add(folderCId);
+                            connectionFolderIds.add(folderCId);
+                        }
                         final String fCId = (folderCId != null ? folderCId : "");
                         return mDriveServiceHelper.findOrCreateFolder(folder, "C").continueWith(t2 -> {
                             String folderId = t2.getResult();
