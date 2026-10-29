@@ -97,6 +97,8 @@ public class ChatActivity extends AppCompatActivity {
     private String mNomeFileConnect = "";
     private int mIntCountFile = 0;
     private boolean bFlagFileExist = false;
+    private final List<String> allCreatedRooms = new ArrayList<>();
+    private final List<String> allCreatedFolderIds = new ArrayList<>();
 
     // Network Monitoring
     private ConnectivityManager.NetworkCallback networkCallback;
@@ -274,52 +276,63 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         mBtnWhatsApp.setOnClickListener(v -> {
-            String idToCopy = mIdIntelocutore.getText().toString().trim();
-            if (TextUtils.isEmpty(idToCopy)) {
-                Toast.makeText(this, "ID stanza non ancora disponibile.", Toast.LENGTH_SHORT).show();
+            if (allCreatedRooms.isEmpty()) {
+                Toast.makeText(this, "Stanze non ancora pronte.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-            builder.setTitle("Invia ID Stanza su WhatsApp");
-            builder.setMessage("Inserisci il numero di telefono del destinatario con prefisso (es. +39...):");
+            CharSequence[] roomNames = new CharSequence[allCreatedRooms.size()];
+            for (int i = 0; i < allCreatedRooms.size(); i++) {
+                roomNames[i] = "Stanza " + (i + 1) + (i == 0 ? " (Corrente)" : "");
+            }
 
-            final EditText input = new EditText(this);
-            input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
-            input.setHint("+393331234567");
-            int padding = (int) (16 * getResources().getDisplayMetrics().density);
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Seleziona quale stanza inviare")
+                    .setItems(roomNames, (dialogInterface, whichRoom) -> {
+                        String selectedRoomId = allCreatedRooms.get(whichRoom);
+                        mIdIntelocutore.setText(selectedRoomId);
+                        mId = selectedRoomId;
+                        String[] parts = selectedRoomId.split(" ");
+                        if (parts.length > 1 && mDriveServiceHelper != null) {
+                            mDriveServiceHelper.setmIdFolderCurrent(parts[1]);
+                        }
 
-            LinearLayout container = new LinearLayout(this);
-            container.setOrientation(LinearLayout.VERTICAL);
-            container.setPadding(padding, 0, padding, 0);
-            container.addView(input);
-            builder.setView(container);
+                        android.app.AlertDialog.Builder phoneBuilder = new android.app.AlertDialog.Builder(this);
+                        phoneBuilder.setTitle("Invia Stanza " + (whichRoom + 1) + " su WhatsApp");
+                        phoneBuilder.setMessage("Inserisci il numero di telefono con prefisso (es. +39...):");
 
-            builder.setPositiveButton("Invia al numero", (dialog, which) -> {
-                String phone = input.getText().toString().trim();
-                String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
+                        final EditText input = new EditText(this);
+                        input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+                        input.setHint("+393331234567");
+                        int padding = (int) (16 * getResources().getDisplayMetrics().density);
 
-                if (!TextUtils.isEmpty(phone)) {
-                    String cleanedPhone = phone.replaceAll("[^0-9+]", "");
-                    String url = "https://api.whatsapp.com/send?phone=" + cleanedPhone + "&text=" + android.net.Uri.encode(shareText);
-                    try {
-                        Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
-                        startActivity(intent);
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Impossibile aprire WhatsApp: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    shareViaWhatsAppStandard(shareText);
-                }
-            });
+                        LinearLayout container = new LinearLayout(this);
+                        container.setOrientation(LinearLayout.VERTICAL);
+                        container.setPadding(padding, 0, padding, 0);
+                        container.addView(input);
+                        phoneBuilder.setView(container);
 
-            builder.setNeutralButton("Scegli contatto", (dialog, which) -> {
-                String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
-                shareViaWhatsAppStandard(shareText);
-            });
+                        phoneBuilder.setPositiveButton("Invia", (d, w) -> {
+                            String phone = input.getText().toString().trim();
+                            String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête (Stanza " + (whichRoom + 1) + ")!\nID Stanza: " + selectedRoomId + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
 
-            builder.setNegativeButton("Annulla", (dialog, which) -> dialog.cancel());
-            builder.show();
+                            if (!TextUtils.isEmpty(phone)) {
+                                String cleanedPhone = phone.replaceAll("[^0-9+]", "");
+                                String url = "https://api.whatsapp.com/send?phone=" + cleanedPhone + "&text=" + android.net.Uri.encode(shareText);
+                                try {
+                                    Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                                    startActivity(intent);
+                                } catch (Exception e) {
+                                    Toast.makeText(this, "Impossibile aprire WhatsApp: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            } else {
+                                shareViaWhatsAppStandard(shareText);
+                            }
+                        });
+                        phoneBuilder.setNegativeButton("Annulla", (d, w) -> d.cancel());
+                        phoneBuilder.show();
+                    })
+                    .show();
         });
 
         mBtnCollega.setOnClickListener(v -> connectToRoom());
@@ -591,7 +604,7 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void setupDriveService(GoogleSignInAccount googleAccount) {
         Log.d(TAG, "Accesso eseguito come: " + googleAccount.getEmail());
-        updateStatus("Inizializzazione stanze Drive…", true);
+        updateStatus("Inizializzazione 3 stanze Drive…", true);
 
         GoogleAccountCredential credential =
                 GoogleAccountCredential.usingOAuth2(
@@ -607,59 +620,70 @@ public class ChatActivity extends AppCompatActivity {
 
         mDriveServiceHelper = new DriveServiceHelper(googleDriveService);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ITALY);
-        String time = sdf.format(new Date());
+        allCreatedRooms.clear();
+        allCreatedFolderIds.clear();
 
-        String folder = String.format("CHAT_%s", time);
-        String folderC = String.format("CHAT_CONNECT_%s", time);
+        // Genera 3 stanze in automatico
+        for (int i = 1; i <= 3; i++) {
+            final int roomIndex = i;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ITALY);
+            String time = sdf.format(new Date()) + "_R" + roomIndex;
 
-        mDriveServiceHelper.createFolder(folderC, "F")
-                .continueWithTask(task -> {
-                    String folderCId = task.getResult();
-                    mId = (folderCId != null ? folderCId : "") + " ";
-                    return mDriveServiceHelper.createFolder(folder, "C");
-                })
-                .addOnSuccessListener(folderId -> {
-                    mId += (folderId != null ? folderId : "");
-                    String cleanId = mId.trim();
-                    if (cleanId.startsWith("null")) {
-                        cleanId = cleanId.substring(4).trim();
-                    }
-                    mIdIntelocutore.setText(cleanId);
-                    updateStatus(getString(R.string.status_ready), false);
+            String folder = String.format("CHAT_%s", time);
+            String folderC = String.format("CHAT_CONNECT_%s", time);
 
-                    mDriveServiceHelper.setmIdFolderCurrent(folderId);
-                    mNomeFile = String.format("%s_C", getDeviceIdentifier());
-                    createFile(mNomeFile, "");
-
-                    mBtnPlay.setEnabled(true);
-                    mBtnWhatsApp.setEnabled(true);
-                    sendBtn.setEnabled(true);
-                    messageET.setEnabled(true);
-
-                    startPolling();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Errore inizializzazione stanze: " + (e != null ? e.getMessage() : "sconosciuto"), e);
-                    String errorMsg = e != null ? e.getMessage() : "Errore sconosciuto";
-                    updateStatus("Errore: " + errorMsg, false);
-                    if (!isNetworkAvailable()) {
-                        setOfflineState(true);
-                    } else {
-                        Toast.makeText(this, "Errore Drive: " + errorMsg, Toast.LENGTH_LONG).show();
-                    }
-
-                    if (e instanceof com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException) {
-                        try {
-                            startActivityForResult(
-                                    ((com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException) e).getIntent(),
-                                    1001
-                            );
-                        } catch (Exception ex) {
-                            Log.e(TAG, "Impossibile avviare intent di recupero autorizzazione", ex);
+            mDriveServiceHelper.createFolder(folderC, "F")
+                    .continueWithTask(task -> {
+                        String folderCId = task.getResult();
+                        if (folderCId != null) allCreatedFolderIds.add(folderCId);
+                        final String fCId = (folderCId != null ? folderCId : "");
+                        return mDriveServiceHelper.createFolder(folder, "C").continueWith(t2 -> {
+                            String folderId = t2.getResult();
+                            if (folderId != null) allCreatedFolderIds.add(folderId);
+                            return fCId + " " + (folderId != null ? folderId : "");
+                        });
+                    })
+                    .addOnSuccessListener(roomId -> {
+                        String cleanId = roomId.trim();
+                        if (cleanId.startsWith("null")) {
+                            cleanId = cleanId.substring(4).trim();
                         }
-                    }
-                });
+                        allCreatedRooms.add(cleanId);
+
+                        // Se è la prima stanza, impostala come attiva
+                        if (roomIndex == 1) {
+                            mId = cleanId;
+                            mIdIntelocutore.setText(cleanId);
+                            updateStatus(getString(R.string.status_ready), false);
+
+                            String[] parts = cleanId.split(" ");
+                            if (parts.length > 1) {
+                                mDriveServiceHelper.setmIdFolderCurrent(parts[1]);
+                            }
+                            mNomeFile = String.format("%s_C", getDeviceIdentifier());
+                            createFile(mNomeFile, "");
+
+                            mBtnPlay.setEnabled(true);
+                            mBtnWhatsApp.setEnabled(true);
+                            sendBtn.setEnabled(true);
+                            messageET.setEnabled(true);
+
+                            startPolling();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Errore creazione stanza " + roomIndex + ": " + (e != null ? e.getMessage() : "sconosciuto"), e);
+                        if (roomIndex == 1) {
+                            String errorMsg = e != null ? e.getMessage() : "Errore sconosciuto";
+                            updateStatus("Errore: " + errorMsg, false);
+                            if (!isNetworkAvailable()) {
+                                setOfflineState(true);
+                            } else {
+                                Toast.makeText(this, "Errore Drive: " + errorMsg, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+        }
     }
 
     /**
@@ -952,9 +976,8 @@ public class ChatActivity extends AppCompatActivity {
         unregisterNetworkMonitoring();
         removeTypingState();
 
-        if (mDriveServiceHelper != null && !TextUtils.isEmpty(mId)) {
-            String[] idFolders = mId.split(" ");
-            for (String folderId : idFolders) {
+        if (mDriveServiceHelper != null) {
+            for (String folderId : allCreatedFolderIds) {
                 if (!TextUtils.isEmpty(folderId) && !"null".equalsIgnoreCase(folderId)) {
                     removeDriveFile(folderId);
                 }
