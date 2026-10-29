@@ -77,9 +77,7 @@ public class ChatActivity extends AppCompatActivity {
     private TextView txtStatus;
     private ProgressBar mPrgMain;
     private LinearLayout bannerNoConnection;
-    private EditText mIdIntelocutore;
     private ImageButton mBtnPlay;
-    private ImageButton mBtnIncolla;
     private ImageButton mBtnWhatsApp;
     private MaterialButton mBtnCollega;
     private RecyclerView messagesContainer;
@@ -87,6 +85,7 @@ public class ChatActivity extends AppCompatActivity {
     private EditText messageET;
     private FloatingActionButton sendBtn;
     private Spinner roomSpinner;
+    private String currentSelectedRoomId = "";
 
     // Chat Data & Adapter
     private ChatAdapter adapter;
@@ -209,9 +208,7 @@ public class ChatActivity extends AppCompatActivity {
         txtStatus = findViewById(R.id.txtStatus);
         mPrgMain = findViewById(R.id.prgMain);
         bannerNoConnection = findViewById(R.id.bannerNoConnection);
-        mIdIntelocutore = findViewById(R.id.editTextTextMultiLine);
         mBtnPlay = findViewById(R.id.btnPlay);
-        mBtnIncolla = findViewById(R.id.btnIncolla);
         mBtnWhatsApp = findViewById(R.id.btnWhatsApp);
         mBtnCollega = findViewById(R.id.BtnCollega);
         messagesContainer = findViewById(R.id.messagesContainer);
@@ -251,12 +248,12 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * Configura i listener di click per i pulsanti di interazione (copia ID, incolla ID, condivisione WhatsApp,
+     * Configura i listener di click per i pulsanti di interazione (copia ID, condivisione WhatsApp,
      * collegamento alla stanza e invio messaggi).
      */
     private void setupListeners() {
         mBtnPlay.setOnClickListener(v -> {
-            String idToCopy = mIdIntelocutore.getText().toString().trim();
+            String idToCopy = currentSelectedRoomId.trim();
             if (!TextUtils.isEmpty(idToCopy)) {
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
@@ -264,18 +261,6 @@ public class ChatActivity extends AppCompatActivity {
                 if (clipboard != null) {
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(this, R.string.toast_id_copied, Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        mBtnIncolla.setOnClickListener(v -> {
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            if (clipboard != null && clipboard.hasPrimaryClip() && clipboard.getPrimaryClip() != null) {
-                CharSequence text = clipboard.getPrimaryClip().getItemAt(0).getText();
-                if (text != null) {
-                    String extractedId = extractIdFromText(text.toString());
-                    mIdIntelocutore.setText(extractedId);
-                    Toast.makeText(this, R.string.toast_id_pasted, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -362,7 +347,7 @@ public class ChatActivity extends AppCompatActivity {
                 .setTitle("Seleziona quale stanza inviare")
                 .setItems(roomNames, (dialogInterface, whichRoom) -> {
                     String selectedRoomId = allCreatedRooms.get(whichRoom);
-                    mIdIntelocutore.setText(selectedRoomId);
+                    currentSelectedRoomId = selectedRoomId;
                     mId = selectedRoomId;
                     String[] parts = selectedRoomId.split(" ");
                     if (parts.length > 1 && mDriveServiceHelper != null) {
@@ -426,7 +411,7 @@ public class ChatActivity extends AppCompatActivity {
                 public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                     if (position < allCreatedRooms.size()) {
                         String selectedRoomId = allCreatedRooms.get(position);
-                        mIdIntelocutore.setText(selectedRoomId);
+                        currentSelectedRoomId = selectedRoomId;
                         mId = selectedRoomId;
                         String[] parts = selectedRoomId.split(" ");
                         if (parts.length > 1 && mDriveServiceHelper != null) {
@@ -439,16 +424,6 @@ public class ChatActivity extends AppCompatActivity {
                 public void onNothingSelected(android.widget.AdapterView<?> parent) {}
             });
         });
-    }
-
-    private String extractIdFromText(String text) {
-        if (TextUtils.isEmpty(text)) return "";
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("([a-zA-Z0-9_\\-]{15,})\\s+([a-zA-Z0-9_\\-]{15,})");
-        java.util.regex.Matcher matcher = pattern.matcher(text);
-        if (matcher.find()) {
-            return matcher.group(1) + " " + matcher.group(2);
-        }
-        return text.trim();
     }
 
     /**
@@ -729,8 +704,8 @@ public class ChatActivity extends AppCompatActivity {
 
                         // Se è la prima stanza, impostala come attiva
                         if (roomIndex == 1) {
+                            currentSelectedRoomId = cleanId;
                             mId = cleanId;
-                            mIdIntelocutore.setText(cleanId);
                             updateStatus(getString(R.string.status_ready), false);
 
                             String[] parts = cleanId.split(" ");
@@ -837,9 +812,9 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        String inputId = mIdIntelocutore.getText().toString().trim();
+        String inputId = currentSelectedRoomId.trim();
         if (TextUtils.isEmpty(inputId)) {
-            Toast.makeText(this, "Inserisci o incolla l'ID della stanza prima di connettere.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Seleziona una stanza prima di connettere.", Toast.LENGTH_SHORT).show();
             return;
         }
 
