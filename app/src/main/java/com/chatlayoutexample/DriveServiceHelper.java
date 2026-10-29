@@ -129,6 +129,48 @@ public class DriveServiceHelper {
     }
 
     /**
+     * Trova una cartella esistente per nome o la crea se non esiste.
+     */
+    public Task<String> findOrCreateFolder(String folderName, String tipo) {
+        return Tasks.call(mExecutor, () -> {
+            String query = "name = '" + folderName + "' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
+            FileList result = mDriveService.files().list()
+                    .setQ(query)
+                    .setSpaces("drive")
+                    .setFields("files(id, name)")
+                    .execute();
+
+            if (result != null && result.getFiles() != null && !result.getFiles().isEmpty()) {
+                String folderId = result.getFiles().get(0).getId();
+                setmIdFolderCurrent(folderId);
+                if ("C".equalsIgnoreCase(tipo)) {
+                    mGlobalIdFolder = folderId;
+                }
+                return folderId;
+            } else {
+                File fileMetadata = new File()
+                        .setName(folderName)
+                        .setParents(Collections.singletonList("root"))
+                        .setMimeType("application/vnd.google-apps.folder");
+
+                File googleFile = mDriveService.files().create(fileMetadata)
+                        .setFields("id")
+                        .execute();
+
+                if (googleFile == null || googleFile.getId() == null) {
+                    throw new IOException("Creazione cartella fallita.");
+                }
+
+                setmIdFolderCurrent(googleFile.getId());
+                if ("C".equalsIgnoreCase(tipo)) {
+                    mGlobalIdFolder = googleFile.getId();
+                }
+                return googleFile.getId();
+            }
+        });
+    }
+
+    /**
      * Elimina un file o cartella identificato da FileId.
      */
     public Task<Void> DeleteFile(String fileId) {

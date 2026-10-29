@@ -604,7 +604,7 @@ public class ChatActivity extends AppCompatActivity {
      */
     private void setupDriveService(GoogleSignInAccount googleAccount) {
         Log.d(TAG, "Accesso eseguito come: " + googleAccount.getEmail());
-        updateStatus("Inizializzazione 3 stanze Drive…", true);
+        updateStatus("Ricerca o creazione 3 stanze fisse…", true);
 
         GoogleAccountCredential credential =
                 GoogleAccountCredential.usingOAuth2(
@@ -623,21 +623,18 @@ public class ChatActivity extends AppCompatActivity {
         allCreatedRooms.clear();
         allCreatedFolderIds.clear();
 
-        // Genera 3 stanze in automatico
+        // Trova o crea le 3 stanze fisse
         for (int i = 1; i <= 3; i++) {
             final int roomIndex = i;
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ITALY);
-            String time = sdf.format(new Date()) + "_R" + roomIndex;
+            String folder = String.format("TATE_CHAT_ROOM_%d", roomIndex);
+            String folderC = String.format("TATE_CHAT_CONN_%d", roomIndex);
 
-            String folder = String.format("CHAT_%s", time);
-            String folderC = String.format("CHAT_CONNECT_%s", time);
-
-            mDriveServiceHelper.createFolder(folderC, "F")
+            mDriveServiceHelper.findOrCreateFolder(folderC, "F")
                     .continueWithTask(task -> {
                         String folderCId = task.getResult();
                         if (folderCId != null) allCreatedFolderIds.add(folderCId);
                         final String fCId = (folderCId != null ? folderCId : "");
-                        return mDriveServiceHelper.createFolder(folder, "C").continueWith(t2 -> {
+                        return mDriveServiceHelper.findOrCreateFolder(folder, "C").continueWith(t2 -> {
                             String folderId = t2.getResult();
                             if (folderId != null) allCreatedFolderIds.add(folderId);
                             return fCId + " " + (folderId != null ? folderId : "");
@@ -672,7 +669,7 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     })
                     .addOnFailureListener(e -> {
-                        Log.e(TAG, "Errore creazione stanza " + roomIndex + ": " + (e != null ? e.getMessage() : "sconosciuto"), e);
+                        Log.e(TAG, "Errore ricerca/creazione stanza " + roomIndex + ": " + (e != null ? e.getMessage() : "sconosciuto"), e);
                         if (roomIndex == 1) {
                             String errorMsg = e != null ? e.getMessage() : "Errore sconosciuto";
                             updateStatus("Errore: " + errorMsg, false);
