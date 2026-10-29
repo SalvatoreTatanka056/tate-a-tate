@@ -57,6 +57,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * ChatActivity gestisce l'interfaccia principale della chat "Tête-à-Tête".
+ * <p>
+ * Questa Activity consente agli utenti di stabilire una connessione peer-to-peer privata
+ * utilizzando Google Drive come backend di memorizzazione e sincronizzazione dei messaggi.
+ * Gestisce l'autenticazione Google, la creazione e la connessione alle stanze di chat,
+ * il monitoraggio della connettività di rete e il polling in tempo reale dei messaggi.
+ * </p>
+ */
 public class ChatActivity extends AppCompatActivity {
 
     private static final String TAG = "ChatActivity";
@@ -120,6 +129,12 @@ public class ChatActivity extends AppCompatActivity {
                 }
             });
 
+    /**
+     * Chiamato quando l'Activity viene creata. Inizializza la UI, la RecyclerView,
+     * i listener degli eventi, il monitoraggio della rete e avvia il processo di autenticazione Google Drive.
+     *
+     * @param savedInstanceState Stato salvato precedente dell'Activity, se presente.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,6 +144,7 @@ public class ChatActivity extends AppCompatActivity {
         setupRecyclerView();
         setupListeners();
         registerNetworkMonitoring();
+        checkFirstRunOnboarding();
 
         // Controllo immediato connettività di rete
         if (!isNetworkAvailable()) {
@@ -139,6 +155,37 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Controlla se è il primo avvio dell'applicazione per mostrare il tutorial di onboarding.
+     */
+    private void checkFirstRunOnboarding() {
+        android.content.SharedPreferences prefs = getSharedPreferences("tate_prefs", MODE_PRIVATE);
+        boolean isFirstRun = prefs.getBoolean("is_first_run", true);
+        if (isFirstRun) {
+            prefs.edit().putBoolean("is_first_run", false).apply();
+            showOnboardingDialog();
+        }
+    }
+
+    /**
+     * Mostra il dialog di benvenuto e guida all'uso (Onboarding).
+     */
+    private void showOnboardingDialog() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("👋 Benvenuto in Tête-à-Tête")
+                .setMessage("Tête-à-Tête è la chat privata e sicura che utilizza Google Drive come stanza privata.\n\n" +
+                        "1️⃣ **Crea la stanza**: L'app genera automaticamente la tua stanza sul cloud.\n" +
+                        "2️⃣ **Invita l'interlocutore**: Inserisci il numero WhatsApp del tuo amico e inviagli l'ID stanza con un tap.\n" +
+                        "3️⃣ **Chattate in libertà**: I messaggi sono sincronizzati in tempo reale in modo completamente privato!")
+                .setPositiveButton("Inizia a chattare", (dialog, which) -> dialog.dismiss())
+                .setCancelable(false)
+                .show();
+    }
+
+    /**
+     * Inizializza i componenti grafici dell'interfaccia utente (View binding manuale)
+     * e disabilita inizialmente i controlli non ancora pronti.
+     */
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -165,6 +212,9 @@ public class ChatActivity extends AppCompatActivity {
         mBtnWhatsApp.setEnabled(false);
     }
 
+    /**
+     * Configura la RecyclerView e l'adapter per la visualizzazione dei messaggi della chat.
+     */
     private void setupRecyclerView() {
         layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
@@ -177,12 +227,19 @@ public class ChatActivity extends AppCompatActivity {
         updateEmptyState();
     }
 
+    /**
+     * Aggiorna la visibilità dello stato vuoto (empty state) in base al numero di messaggi presenti.
+     */
     private void updateEmptyState() {
         if (emptyStateLayout != null) {
             emptyStateLayout.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
         }
     }
 
+    /**
+     * Configura i listener di click per i pulsanti di interazione (copia ID, incolla ID, condivisione WhatsApp,
+     * collegamento alla stanza e invio messaggi).
+     */
     private void setupListeners() {
         mBtnPlay.setOnClickListener(v -> {
             String idToCopy = mIdIntelocutore.getText().toString().trim();
@@ -211,29 +268,63 @@ public class ChatActivity extends AppCompatActivity {
 
         mBtnWhatsApp.setOnClickListener(v -> {
             String idToCopy = mIdIntelocutore.getText().toString().trim();
-            if (!TextUtils.isEmpty(idToCopy)) {
-                String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
-                Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
-                whatsappIntent.setType("text/plain");
-                whatsappIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-                whatsappIntent.setPackage("com.whatsapp");
-                try {
-                    startActivity(whatsappIntent);
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                    shareIntent.setType("text/plain");
-                    shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-                    startActivity(Intent.createChooser(shareIntent, "Condividi ID Stanza"));
-                }
-            } else {
+            if (TextUtils.isEmpty(idToCopy)) {
                 Toast.makeText(this, "ID stanza non ancora disponibile.", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+            builder.setTitle("Invia ID Stanza su WhatsApp");
+            builder.setMessage("Inserisci il numero di telefono del destinatario con prefisso (es. +39...):");
+
+            final EditText input = new EditText(this);
+            input.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+            input.setHint("+393331234567");
+            int padding = (int) (16 * getResources().getDisplayMetrics().density);
+
+            LinearLayout container = new LinearLayout(this);
+            container.setOrientation(LinearLayout.VERTICAL);
+            container.setPadding(padding, 0, padding, 0);
+            container.addView(input);
+            builder.setView(container);
+
+            builder.setPositiveButton("Invia al numero", (dialog, which) -> {
+                String phone = input.getText().toString().trim();
+                String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
+
+                if (!TextUtils.isEmpty(phone)) {
+                    String cleanedPhone = phone.replaceAll("[^0-9+]", "");
+                    String url = "https://api.whatsapp.com/send?phone=" + cleanedPhone + "&text=" + android.net.Uri.encode(shareText);
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Impossibile aprire WhatsApp: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    shareViaWhatsAppStandard(shareText);
+                }
+            });
+
+            builder.setNeutralButton("Scegli contatto", (dialog, which) -> {
+                String shareText = "💬 Unisciti alla mia chat privata Tête-à-Tête!\nID Stanza: " + idToCopy + "\nCopia questo messaggio e incollalo nell'app per connetterti.";
+                shareViaWhatsAppStandard(shareText);
+            });
+
+            builder.setNegativeButton("Annulla", (dialog, which) -> dialog.cancel());
+            builder.show();
         });
 
         mBtnCollega.setOnClickListener(v -> connectToRoom());
         sendBtn.setOnClickListener(v -> sendMessage());
     }
 
+    /**
+     * Estrae l'ID della stanza da un testo condiviso o incollato.
+     *
+     * @param text Testo sorgente da cui estrarre l'ID.
+     * @return L'ID estratto o il testo originale formattato.
+     */
     private String extractIdFromText(String text) {
         if (TextUtils.isEmpty(text)) return "";
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("([a-zA-Z0-9_\\-]{15,})\\s+([a-zA-Z0-9_\\-]{15,})");
@@ -244,8 +335,33 @@ public class ChatActivity extends AppCompatActivity {
         return text.trim();
     }
 
+    /**
+     * Condivide l'ID della stanza tramite il selettore di condivisione standard o WhatsApp.
+     *
+     * @param shareText Testo da condividere.
+     */
+    private void shareViaWhatsAppStandard(String shareText) {
+        Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+        whatsappIntent.setType("text/plain");
+        whatsappIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+        whatsappIntent.setPackage("com.whatsapp");
+        try {
+            startActivity(whatsappIntent);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+            startActivity(Intent.createChooser(shareIntent, "Condividi ID Stanza"));
+        }
+    }
+
     // --- Controllo Connessione di Rete ---
 
+    /**
+     * Verifica se è presente una connessione internet attiva sul dispositivo.
+     *
+     * @return true se la connessione è attiva e dispensa internet, false altrimenti.
+     */
     public boolean isNetworkAvailable() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) return false;
@@ -265,6 +381,9 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Registra un NetworkCallback per monitorare in tempo reale lo stato della connessione di rete.
+     */
     private void registerNetworkMonitoring() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm == null) return;
@@ -308,6 +427,9 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Annulla la registrazione del NetworkCallback per prevenire memory leak.
+     */
     private void unregisterNetworkMonitoring() {
         if (networkCallback != null) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -319,6 +441,11 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Aggiorna lo stato visivo dell'interfaccia quando il dispositivo entra o esce dalla modalità offline.
+     *
+     * @param isOffline true se offline, false se online.
+     */
     private void setOfflineState(boolean isOffline) {
         if (bannerNoConnection != null) {
             bannerNoConnection.setVisibility(isOffline ? View.VISIBLE : View.GONE);
@@ -330,6 +457,12 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Aggiorna il testo dello status bar e la visibilità della barra di progressione.
+     *
+     * @param status   Messaggio di stato da mostrare.
+     * @param isLoading true per mostrare la ProgressBar, false per nasconderla.
+     */
     private void updateStatus(String status, boolean isLoading) {
         runOnUiThread(() -> {
             if (txtStatus != null) {
@@ -341,10 +474,18 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Restituisce un identificativo univoco del dispositivo basato su ANDROID_ID.
+     *
+     * @return ID univoco del dispositivo.
+     */
     private String getDeviceIdentifier() {
         return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
+    /**
+     * Richiede l'autenticazione dell'utente tramite Google Sign-In con i permessi Google Drive richiesti.
+     */
     private void requestSignIn() {
         if (!isNetworkAvailable()) {
             setOfflineState(true);
@@ -367,6 +508,11 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Gestisce il risultato dell'intento di autenticazione Google Sign-In.
+     *
+     * @param resultData Dati di ritorno dell'intent di login.
+     */
     private void handleSignInResult(Intent resultData) {
         GoogleSignIn.getSignedInAccountFromIntent(resultData)
                 .addOnSuccessListener(this::setupDriveService)
@@ -377,6 +523,11 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Inizializza il servizio Google Drive e crea le cartelle dedicate alla stanza di chat sul cloud.
+     *
+     * @param googleAccount Account Google autenticato dell'utente.
+     */
     private void setupDriveService(GoogleSignInAccount googleAccount) {
         Log.d(TAG, "Accesso eseguito come: " + googleAccount.getEmail());
         updateStatus("Inizializzazione stanze Drive…", true);
@@ -450,6 +601,9 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Avvia il timer di polling periodico per controllare la presenza di nuovi messaggi su Google Drive.
+     */
     private void startPolling() {
         if (!isPollingActive && isNetworkConnected) {
             isPollingActive = true;
@@ -457,11 +611,20 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Ferma il polling periodico dei messaggi.
+     */
     private void stopPolling() {
         isPollingActive = false;
         pollHandler.removeCallbacks(pollRunnable);
     }
 
+    /**
+     * Crea un file di testo su Google Drive nella cartella corrente.
+     *
+     * @param nomeFile Nome del file da creare.
+     * @param message  Contenuto testuale del file.
+     */
     private void createFile(String nomeFile, String message) {
         if (mDriveServiceHelper != null) {
             mDriveServiceHelper.createFile(nomeFile, message)
@@ -474,6 +637,13 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Crea un file di connessione nella cartella remota dell'interlocutore per stabilire la connessione bidirezionale.
+     *
+     * @param nomeFile Nome del file di connessione.
+     * @param message  Contenuto opzionale.
+     * @param folder   ID della cartella remota dell'interlocutore.
+     */
     private void createFileConnect(String nomeFile, String message, String folder) {
         if (mDriveServiceHelper != null) {
             mDriveServiceHelper.createFileConnect(nomeFile, message, folder)
@@ -495,6 +665,9 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Tenta di connettersi a una stanza esistente utilizzando l'ID inserito dall'utente.
+     */
     private void connectToRoom() {
         if (!isNetworkAvailable()) {
             setOfflineState(true);
@@ -521,6 +694,11 @@ public class ChatActivity extends AppCompatActivity {
         queryCount(idFolders);
     }
 
+    /**
+     * Verifica il conteggio dei file nella cartella remota per validare la capienza della stanza (max 2 partecipanti).
+     *
+     * @param idFolders Array contenente gli ID delle cartelle della stanza.
+     */
     public void queryCount(String[] idFolders) {
         if (mDriveServiceHelper == null) return;
 
@@ -564,6 +742,9 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Esegue una query periodica su Google Drive per verificare la presenza di nuovi file/messaggi dai partecipanti.
+     */
     private void query() {
         if (mDriveServiceHelper == null || !isNetworkAvailable()) return;
 
@@ -585,6 +766,11 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Legge il contenuto di un file Google Drive specifico e lo mostra come messaggio ricevuto.
+     *
+     * @param fileId ID del file su Google Drive.
+     */
     private void readFileDrive(String fileId) {
         if (mDriveServiceHelper == null) return;
 
@@ -607,6 +793,9 @@ public class ChatActivity extends AppCompatActivity {
                 .addOnFailureListener(exception -> Log.e(TAG, "Impossibile leggere file: " + fileId, exception));
     }
 
+    /**
+     * Invia un messaggio di chat creando un nuovo file su Google Drive e aggiornando la UI locale.
+     */
     private void sendMessage() {
         // Controllo connettività prima dell'invio
         if (!isNetworkAvailable()) {
@@ -635,6 +824,11 @@ public class ChatActivity extends AppCompatActivity {
         displayMessage(chatMessage);
     }
 
+    /**
+     * Aggiunge un messaggio alla cronologia della chat e scorre la RecyclerView fino all'ultimo elemento.
+     *
+     * @param message Oggetto ChatMessage da visualizzare.
+     */
     public void displayMessage(ChatMessage message) {
         runOnUiThread(() -> {
             adapter.add(message);
@@ -642,6 +836,11 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Rimuove un file o una cartella da Google Drive.
+     *
+     * @param fileId ID del file da eliminare.
+     */
     public void removeDriveFile(String fileId) {
         if (mDriveServiceHelper != null && isNetworkAvailable()) {
             mDriveServiceHelper.DeleteFile(fileId);

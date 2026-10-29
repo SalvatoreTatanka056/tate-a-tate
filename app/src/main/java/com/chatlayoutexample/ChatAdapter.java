@@ -40,6 +40,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
 
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
+        holder.itemView.setAlpha(0f);
+        holder.itemView.setTranslationY(20f);
+        holder.itemView.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(250)
+                .start();
+
         ChatMessage message = chatMessages.get(position);
         boolean isMe = message.getIsme();
 
