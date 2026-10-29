@@ -117,6 +117,13 @@ public class ChatActivity extends AppCompatActivity {
         }
     };
 
+    // Typing Indicator & Status Animation
+    private boolean isTypingSent = false;
+    private String mTypingFileId = "";
+    private final Handler typingHandler = new Handler(Looper.getMainLooper());
+    private final Runnable stopTypingRunnable = this::removeTypingState;
+    private android.animation.ObjectAnimator statusAnimator;
+
     // Activity Result Launcher
     private final ActivityResultLauncher<Intent> signInLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -317,6 +324,30 @@ public class ChatActivity extends AppCompatActivity {
 
         mBtnCollega.setOnClickListener(v -> connectToRoom());
         sendBtn.setOnClickListener(v -> sendMessage());
+
+        messageET.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    if (!isTypingSent && mDriveServiceHelper != null) {
+                        isTypingSent = true;
+                        String typingFileName = String.format("%s_TYPING", getDeviceIdentifier());
+                        mDriveServiceHelper.createFile(typingFileName, "TYPING")
+                                .addOnSuccessListener(fileId -> mTypingFileId = fileId);
+                    }
+                    typingHandler.removeCallbacks(stopTypingRunnable);
+                    typingHandler.postDelayed(stopTypingRunnable, 3000);
+                } else {
+                    removeTypingState();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
     }
 
     /**
@@ -352,6 +383,36 @@ public class ChatActivity extends AppCompatActivity {
             shareIntent.setType("text/plain");
             shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
             startActivity(Intent.createChooser(shareIntent, "Condividi ID Stanza"));
+        }
+    }
+
+    private void removeTypingState() {
+        isTypingSent = false;
+        if (!TextUtils.isEmpty(mTypingFileId) && mDriveServiceHelper != null) {
+            String fileIdToDelete = mTypingFileId;
+            mTypingFileId = "";
+            mDriveServiceHelper.DeleteFile(fileIdToDelete);
+        }
+        typingHandler.removeCallbacks(stopTypingRunnable);
+    }
+
+    private void animateStatus(boolean pulse) {
+        if (txtStatus == null) return;
+        if (pulse) {
+            if (statusAnimator == null) {
+                statusAnimator = android.animation.ObjectAnimator.ofFloat(txtStatus, "alpha", 1f, 0.4f, 1f);
+                statusAnimator.setDuration(800);
+                statusAnimator.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+            }
+            if (!statusAnimator.isRunning()) {
+                statusAnimator.start();
+            }
+        } else {
+            if (statusAnimator != null) {
+                statusAnimator.cancel();
+                statusAnimator = null;
+            }
+            txtStatus.setAlpha(1f);
         }
     }
 
@@ -743,7 +804,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * Esegue una query periodica su Google Drive per verificare la presenza di nuovi file/messaggi dai partecipanti.
+     * Esegue una query periodica su Google Drive per verificare la presenza di nuovi file/messaggi o stato di digitazione.
      */
     private void query() {
         if (mDriveServiceHelper == null || !isNetworkAvailable()) return;
@@ -751,9 +812,27 @@ public class ChatActivity extends AppCompatActivity {
         mDriveServiceHelper.queryFiles()
                 .addOnSuccessListener(fileList -> {
                     if (fileList != null && fileList.getFiles() != null) {
+                        boolean peerTyping = false;
                         for (File file : fileList.getFiles()) {
-                            if (!file.getName().equalsIgnoreCase(mNomeFile)) {
-                                readFileDrive(file.getId());
+                            String fileName = file.getName();
+                            if (fileName != null) {
+                                if (fileName.endsWith("_TYPING") && !fileName.startsWith(getDeviceIdentifier())) {
+                                    peerTyping = true;
+                                } else if (!fileName.equalsIgnoreCase(mNomeFile) && !fileName.endsWith("_TYPING")) {
+                                    readFileDrive(file.getId());
+                                }
+                            }
+                        }
+
+                        if (peerTyping) {
+                            updateStatus("✏️ Sta scrivendo...", false);
+                            animateStatus(true);
+                        } else {
+                            if (mDriveServiceHelper.bflagStartTimer) {
+                                updateStatus(getString(R.string.status_connected), false);
+                                animateStatus(false);
+                            } else {
+                                animateStatus(false);
                             }
                         }
                     }
@@ -871,6 +950,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onDestroy();
         stopPolling();
         unregisterNetworkMonitoring();
+        removeTypingState();
 
         if (mDriveServiceHelper != null && !TextUtils.isEmpty(mId)) {
             String[] idFolders = mId.split(" ");
