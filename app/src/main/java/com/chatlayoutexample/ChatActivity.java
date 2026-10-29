@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -75,6 +76,7 @@ public class ChatActivity extends AppCompatActivity {
     // UI Controls
     private Toolbar toolbar;
     private TextView txtStatus;
+    private ImageView imgStatusLed;
     private ProgressBar mPrgMain;
     private LinearLayout bannerNoConnection;
     private ImageButton mBtnPlay;
@@ -206,6 +208,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         txtStatus = findViewById(R.id.txtStatus);
+        imgStatusLed = findViewById(R.id.imgStatusLed);
         mPrgMain = findViewById(R.id.prgMain);
         bannerNoConnection = findViewById(R.id.bannerNoConnection);
         mBtnPlay = findViewById(R.id.btnPlay);
@@ -591,6 +594,15 @@ public class ChatActivity extends AppCompatActivity {
             }
             if (mPrgMain != null) {
                 mPrgMain.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            }
+            if (imgStatusLed != null) {
+                if (status != null && (status.contains("Nessuna connessione") || status.contains("offline") || status.contains("Errore") || status.contains("fallita"))) {
+                    imgStatusLed.setImageResource(R.drawable.ic_led_red);
+                } else if (status != null && (status.contains("Connesso") || status.contains("completata"))) {
+                    imgStatusLed.setImageResource(R.drawable.ic_led_green);
+                } else {
+                    imgStatusLed.setImageResource(R.drawable.ic_led_yellow);
+                }
             }
         });
     }
