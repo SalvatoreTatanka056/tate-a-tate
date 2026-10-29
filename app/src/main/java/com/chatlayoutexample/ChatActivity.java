@@ -24,6 +24,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -85,6 +86,7 @@ public class ChatActivity extends AppCompatActivity {
     private LinearLayout emptyStateLayout;
     private EditText messageET;
     private FloatingActionButton sendBtn;
+    private Spinner roomSpinner;
 
     // Chat Data & Adapter
     private ChatAdapter adapter;
@@ -216,6 +218,7 @@ public class ChatActivity extends AppCompatActivity {
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         messageET = findViewById(R.id.messageEdit);
         sendBtn = findViewById(R.id.chatSendButton);
+        roomSpinner = findViewById(R.id.roomSpinner);
 
         messageET.setEnabled(false);
         sendBtn.setEnabled(false);
@@ -402,6 +405,40 @@ public class ChatActivity extends AppCompatActivity {
                     phoneBuilder.show();
                 })
                 .show();
+    }
+
+    private void updateRoomSpinner() {
+        runOnUiThread(() -> {
+            if (roomSpinner == null || allCreatedRooms.isEmpty()) return;
+
+            String[] roomDisplayNames = new String[allCreatedRooms.size()];
+            for (int i = 0; i < allCreatedRooms.size(); i++) {
+                roomDisplayNames[i] = "Stanza " + (i + 1);
+            }
+
+            android.widget.ArrayAdapter<String> adapterSpinner = new android.widget.ArrayAdapter<>(
+                    this, android.R.layout.simple_spinner_item, roomDisplayNames);
+            adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            roomSpinner.setAdapter(adapterSpinner);
+
+            roomSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                    if (position < allCreatedRooms.size()) {
+                        String selectedRoomId = allCreatedRooms.get(position);
+                        mIdIntelocutore.setText(selectedRoomId);
+                        mId = selectedRoomId;
+                        String[] parts = selectedRoomId.split(" ");
+                        if (parts.length > 1 && mDriveServiceHelper != null) {
+                            mDriveServiceHelper.setmIdFolderCurrent(parts[1]);
+                        }
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+            });
+        });
     }
 
     private String extractIdFromText(String text) {
@@ -685,6 +722,10 @@ public class ChatActivity extends AppCompatActivity {
                             cleanId = cleanId.substring(4).trim();
                         }
                         allCreatedRooms.add(cleanId);
+
+                        if (allCreatedRooms.size() == 3) {
+                            updateRoomSpinner();
+                        }
 
                         // Se è la prima stanza, impostala come attiva
                         if (roomIndex == 1) {
