@@ -17,6 +17,14 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.database.Cursor;
+import android.net.Uri;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintDocumentInfo;
+import android.print.PrintManager;
+import android.provider.OpenableColumns;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -81,6 +89,7 @@ public class ChatActivity extends AppCompatActivity {
     private LinearLayout bannerNoConnection;
     private ImageButton mBtnPlay;
     private ImageButton mBtnWhatsApp;
+    private ImageButton btnAttach;
     private MaterialButton mBtnCollega;
     private RecyclerView messagesContainer;
     private LinearLayout emptyStateLayout;
@@ -88,6 +97,7 @@ public class ChatActivity extends AppCompatActivity {
     private FloatingActionButton sendBtn;
     private Spinner roomSpinner;
     private String currentSelectedRoomId = "";
+    private ActivityResultLauncher<Intent> docPickerLauncher;
 
     // Chat Data & Adapter
     private ChatAdapter adapter;
@@ -157,6 +167,7 @@ public class ChatActivity extends AppCompatActivity {
         initViews();
         setupRecyclerView();
         setupListeners();
+        setupDocPicker();
         registerNetworkMonitoring();
         checkFirstRunOnboarding();
 
@@ -213,6 +224,7 @@ public class ChatActivity extends AppCompatActivity {
         bannerNoConnection = findViewById(R.id.bannerNoConnection);
         mBtnPlay = findViewById(R.id.btnPlay);
         mBtnWhatsApp = findViewById(R.id.btnWhatsApp);
+        btnAttach = findViewById(R.id.btnAttach);
         mBtnCollega = findViewById(R.id.BtnCollega);
         messagesContainer = findViewById(R.id.messagesContainer);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
@@ -222,6 +234,7 @@ public class ChatActivity extends AppCompatActivity {
 
         messageET.setEnabled(false);
         sendBtn.setEnabled(false);
+        if (btnAttach != null) btnAttach.setEnabled(false);
         mBtnPlay.setEnabled(false);
         mBtnWhatsApp.setEnabled(false);
     }
@@ -269,6 +282,10 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         mBtnWhatsApp.setOnClickListener(v -> checkRoomsOccupancyAndShowDialog());
+
+        if (btnAttach != null) {
+            btnAttach.setOnClickListener(v -> openDocumentPicker());
+        }
 
         mBtnCollega.setOnClickListener(v -> connectToRoom());
         sendBtn.setOnClickListener(v -> sendMessage());
@@ -729,6 +746,7 @@ public class ChatActivity extends AppCompatActivity {
 
                             mBtnPlay.setEnabled(true);
                             mBtnWhatsApp.setEnabled(true);
+                            if (btnAttach != null) btnAttach.setEnabled(true);
                             sendBtn.setEnabled(true);
                             messageET.setEnabled(true);
 
@@ -934,7 +952,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     /**
-     * Legge il contenuto di un file Google Drive specifico e lo mostra come messaggio ricevuto.
+     * Legge il contenuto di un file Google Drive specifico e lo mostra come messaggio o allegato ricevuto.
      *
      * @param fileId ID del file su Google Drive.
      */
@@ -945,19 +963,252 @@ public class ChatActivity extends AppCompatActivity {
                 .addOnSuccessListener(nameAndContent -> {
                     String contentFile = nameAndContent.second;
                     if (!TextUtils.isEmpty(contentFile)) {
-                        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-                        ChatMessage chatMessage = new ChatMessage(
-                                System.currentTimeMillis(),
-                                false,
-                                contentFile,
-                                timeFormat.format(new Date())
-                        );
-
-                        displayMessage(chatMessage);
+                        if (contentFile.startsWith("DOC:")) {
+                            handleReceivedDocument(contentFile);
+                        } else {
+                            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                            ChatMessage chatMessage = new ChatMessage(
+                                    System.currentTimeMillis(),
+                                    false,
+                                    contentFile,
+                                    timeFormat.format(new Date())
+                            );
+                            displayMessage(chatMessage);
+                        }
                         removeDriveFile(fileId);
                     }
                 })
                 .addOnFailureListener(exception -> Log.e(TAG, "Impossibile leggere file: " + fileId, exception));
+    }
+
+    private void setupDocPicker() {
+        docPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null && result.getData().getData() != null) {
+                        Uri uri = result.getData().getData();
+                        sendDocumentUri(uri);
+                    }
+                }
+        );
+    }
+
+    private void openDocumentPicker() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        String[] mimeTypes = {
+                "text/plain",
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+        docPickerLauncher.launch(intent);
+    }
+
+    private void sendDocumentUri(Uri uri) {
+        if (!isNetworkAvailable()) {
+            Toast.makeText(this, R.string.no_connection_send_err, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            String fileName = getFileNameFromUri(uri);
+            if (TextUtils.isEmpty(fileName)) {
+                fileName = "documento";
+            }
+
+            String lowerName = fileName.toLowerCase();
+            if (lowerName.endsWith(".exe") || lowerName.endsWith(".apk") || lowerName.endsWith(".bin") || lowerName.endsWith(".sh") || lowerName.endsWith(".bat")) {
+                Toast.makeText(this, "I file binari/eseguibili non sono consentiti.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            java.io.InputStream is = getContentResolver().openInputStream(uri);
+            byte[] bytes = getBytesFromInputStream(is);
+            if (is != null) is.close();
+
+            if (bytes == null || bytes.length == 0) {
+                Toast.makeText(this, "File vuoto o non leggibile.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String base64Data = Base64.encodeToString(bytes, Base64.NO_WRAP);
+            String mimeType = getContentResolver().getType(uri);
+            if (mimeType == null) mimeType = "application/octet-stream";
+
+            String payload = "DOC:" + fileName + ":" + mimeType + ":" + base64Data;
+            String docFileName = String.format("%s_DOC_%d", getDeviceIdentifier(), System.currentTimeMillis());
+
+            updateStatus("Invio allegato...", true);
+            createFile(docFileName, payload);
+
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            ChatMessage chatMessage = new ChatMessage(
+                    System.currentTimeMillis(),
+                    true,
+                    "📄 Allegato inviato: " + fileName,
+                    timeFormat.format(new Date())
+            );
+            displayMessage(chatMessage);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Errore invio documento: " + e.getMessage(), e);
+            Toast.makeText(this, "Errore invio documento: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String getFileNameFromUri(Uri uri) {
+        String result = null;
+        if ("content".equals(uri.getScheme())) {
+            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    if (nameIndex != -1) {
+                        result = cursor.getString(nameIndex);
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result != null ? result.lastIndexOf('/') : -1;
+            if (cut != -1 && result != null) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
+    }
+
+    private byte[] getBytesFromInputStream(java.io.InputStream inputStream) throws java.io.IOException {
+        java.io.ByteArrayOutputStream byteBuffer = new java.io.ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int len;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
+    }
+
+    private void handleReceivedDocument(String docPayload) {
+        try {
+            String[] parts = docPayload.split(":", 4);
+            if (parts.length < 4) return;
+
+            String fileName = parts[1];
+            String mimeType = parts[2];
+            String base64Data = parts[3];
+
+            byte[] fileBytes = Base64.decode(base64Data, Base64.DEFAULT);
+            java.io.File tempFile = new java.io.File(getCacheDir(), "received_" + fileName);
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(tempFile);
+            fos.write(fileBytes);
+            fos.close();
+
+            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            ChatMessage chatMessage = new ChatMessage(
+                    System.currentTimeMillis(),
+                    false,
+                    "📄 Allegato ricevuto: " + fileName + "\n🖨️ Inviato alla stampante!",
+                    timeFormat.format(new Date())
+            );
+            displayMessage(chatMessage);
+
+            Toast.makeText(this, "Documento ricevuto. Avvio stampa per: " + fileName, Toast.LENGTH_LONG).show();
+            printDocument(tempFile, fileName, mimeType);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Errore gestione documento ricevuto: " + e.getMessage(), e);
+        }
+    }
+
+    private void printDocument(java.io.File documentFile, String fileName, String mimeType) {
+        runOnUiThread(() -> {
+            PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+            if (printManager == null) {
+                Toast.makeText(this, "Servizio di stampa non disponibile su questo dispositivo", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String jobName = getString(R.string.app_name) + " - " + fileName;
+
+            if ("application/pdf".equalsIgnoreCase(mimeType) || fileName.toLowerCase().endsWith(".pdf")) {
+                printPdf(printManager, jobName, documentFile);
+            } else {
+                printText(printManager, jobName, documentFile);
+            }
+        });
+    }
+
+    private void printPdf(PrintManager printManager, String jobName, java.io.File pdfFile) {
+        PrintDocumentAdapter printAdapter = new PrintDocumentAdapter() {
+            @Override
+            public void onLayout(PrintAttributes oldAttributes, PrintAttributes newAttributes,
+                                 android.os.CancellationSignal cancellationSignal,
+                                 LayoutResultCallback callback, android.os.Bundle extras) {
+                if (cancellationSignal.isCanceled()) {
+                    callback.onLayoutCancelled();
+                    return;
+                }
+                PrintDocumentInfo info = new PrintDocumentInfo.Builder(jobName)
+                        .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
+                        .setPageCount(PrintDocumentInfo.PAGE_COUNT_UNKNOWN)
+                        .build();
+                callback.onLayoutFinished(info, true);
+            }
+
+            @Override
+            public void onWrite(android.print.PageRange[] pages,
+                                android.os.ParcelFileDescriptor destination,
+                                android.os.CancellationSignal cancellationSignal,
+                                WriteResultCallback callback) {
+                java.io.InputStream input = null;
+                java.io.OutputStream output = null;
+                try {
+                    input = new java.io.FileInputStream(pdfFile);
+                    output = new java.io.FileOutputStream(destination.getFileDescriptor());
+                    byte[] buf = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = input.read(buf)) > 0) {
+                        output.write(buf, 0, bytesRead);
+                    }
+                    callback.onWriteFinished(new android.print.PageRange[]{android.print.PageRange.ALL_PAGES});
+                } catch (Exception e) {
+                    callback.onWriteFailed(e.getMessage());
+                } finally {
+                    try { if (input != null) input.close(); } catch (Exception ignored) {}
+                    try { if (output != null) output.close(); } catch (Exception ignored) {}
+                }
+            }
+        };
+        printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
+    }
+
+    private void printText(PrintManager printManager, String jobName, java.io.File txtFile) {
+        try {
+            StringBuilder text = new StringBuilder();
+            java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(txtFile));
+            String line;
+            while ((line = br.readLine()) != null) {
+                text.append(line).append("<br/>");
+            }
+            br.close();
+
+            android.webkit.WebView webView = new android.webkit.WebView(this);
+            webView.setWebViewClient(new android.webkit.WebViewClient() {
+                @Override
+                public void onPageFinished(android.webkit.WebView view, String url) {
+                    PrintDocumentAdapter printAdapter = webView.createPrintDocumentAdapter(jobName);
+                    printManager.print(jobName, printAdapter, new PrintAttributes.Builder().build());
+                }
+            });
+            webView.loadDataWithBaseURL(null, "<html><body><pre style='white-space: pre-wrap; font-family: sans-serif;'>" + text + "</pre></body></html>", "text/html", "UTF-8", null);
+        } catch (Exception e) {
+            Log.e(TAG, "Errore stampa testo: " + e.getMessage(), e);
+        }
     }
 
     /**
