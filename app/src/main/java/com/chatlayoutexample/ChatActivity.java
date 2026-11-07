@@ -17,6 +17,10 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.print.PrintAttributes;
@@ -42,6 +46,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -170,6 +177,8 @@ public class ChatActivity extends AppCompatActivity {
         setupDocPicker();
         registerNetworkMonitoring();
         checkFirstRunOnboarding();
+        createNotificationChannel();
+        checkNotificationPermission();
 
         // Controllo immediato connettività di rete
         if (!isNetworkAvailable()) {
@@ -951,6 +960,52 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    ChatPollingService.CHANNEL_ID,
+                    "Messaggi Tête-à-Tête",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Notifiche per nuovi messaggi e allegati ricevuti");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 102);
+            }
+        }
+    }
+
+    private void showNotification(String title, String message) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager == null) return;
+
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this, 0, intent,
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChatPollingService.CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setContentIntent(pendingIntent);
+
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+    }
+
     /**
      * Legge il contenuto di un file Google Drive specifico e lo mostra come messaggio o allegato ricevuto.
      *
@@ -974,6 +1029,7 @@ public class ChatActivity extends AppCompatActivity {
                                     timeFormat.format(new Date())
                             );
                             displayMessage(chatMessage);
+                            showNotification("💬 Nuovo messaggio ricevuto", contentFile);
                         }
                         removeDriveFile(fileId);
                     }
@@ -1116,6 +1172,7 @@ public class ChatActivity extends AppCompatActivity {
                     timeFormat.format(new Date())
             );
             displayMessage(chatMessage);
+            showNotification("📄 Nuovo allegato ricevuto", fileName + " (Inviato alla stampante)");
 
             Toast.makeText(this, "Documento ricevuto. Avvio stampa per: " + fileName, Toast.LENGTH_LONG).show();
             printDocument(tempFile, fileName, mimeType);
