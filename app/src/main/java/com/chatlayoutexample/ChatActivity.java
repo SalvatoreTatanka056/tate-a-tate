@@ -179,6 +179,7 @@ public class ChatActivity extends AppCompatActivity {
         checkFirstRunOnboarding();
         createNotificationChannel();
         checkNotificationPermission();
+        startBackgroundPollingService();
 
         // Controllo immediato connettività di rete
         if (!isNetworkAvailable()) {
@@ -983,6 +984,19 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void startBackgroundPollingService() {
+        try {
+            Intent serviceIntent = new Intent(this, ChatPollingService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Impossibile avviare ChatPollingService: " + e.getMessage());
+        }
+    }
+
     private void showNotification(String title, String message) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager == null) return;
@@ -999,8 +1013,9 @@ public class ChatActivity extends AppCompatActivity {
                 .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setVibrate(new long[]{0, 500, 250, 500})
                 .setContentIntent(pendingIntent);
 
         notificationManager.notify((int) System.currentTimeMillis(), builder.build());
